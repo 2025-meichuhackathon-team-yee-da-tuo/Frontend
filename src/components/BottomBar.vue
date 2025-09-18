@@ -9,7 +9,10 @@
       <img src="@/assets/Icons/hamburger-bar.svg" alt="page selection" />
     </router-link>
 
-    <div class="btm-bar-header">{{ title }}</div>
+    <div class="btm-bar-header">
+      <img v-if="titleIcon" :src="titleIcon" :alt="titleIconAlt" :class="titleIconClass"/>
+      <slot v-else>{{ title }}</slot>
+    </div>
 
     <span class="btm-bar-btn" aria-label="back" @click="$emit('goBack')">
       <img src="@/assets/Icons/back-arrow.svg" alt="back to previous page" />
@@ -20,14 +23,11 @@
 <script>
 export default {
   props: {
-    showMenu: {
-      type: Boolean,
-      default: true,
-    },
-    title: {
-      type: String,
-      default: "",
-    },
+    showMenu: { type: Boolean, default: true },
+    title:    { type: String, default: "" },
+    titleIcon: { type: String, default: "" },
+    titleIconAlt: { type: String, default: "" },
+    titleIconClass: { type: String, default: "" }
   },
 };
 </script>
@@ -37,8 +37,9 @@ export default {
   position: fixed;
   left: 0;
   right: 0;
+  height: 30px;  
   bottom: -0.2rem;
-  width: 100vw;
+  width: 100%;
   background: #19181a;
   display: flex;
   justify-content: space-between;
@@ -56,5 +57,13 @@ export default {
   font-weight: bold;
   font-size: 1.2rem;
   color: #fff;
+}
+.user-icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto;
+  transform: translate(4px); 
 }
 </style>

@@ -2,28 +2,20 @@
   <div class="menu-bg">
     <div class="search-bar">
       <span class="search-icon"></span>
-      <input type="text" v-model="search" @input="searchHistory" placeholder="搜尋交易..." />
+      <input type="text" v-model="search" placeholder="search record..." />
     </div>
     <div class="records">
-      <div
-        v-for="item in paginatedRecords"
-        :key="item.id"
-        class="record-row"
-      >
-        <span class="item-left">{{ item.leftName }}{{ item.leftCount }}</span>
+      <div v-for="item in filteredRecords" :key="item.id" class="record-row">
+        <span class="item-left">{{ item.leftName }} {{ item.leftCount }}</span>
         <span class="exchange-arrow">⇄</span>
-        <span class="item-right">{{ item.rightName }}{{ item.rightCount }}</span>
+        <span class="item-right">{{ item.rightName }} {{ item.rightCount }}</span>
       </div>
     </div>
-    <!-- <div class="pagination-bar">
-      <button class="arrow-btn" :disabled="page === 1" @click="prevPage">&#x276E;&#x276E;</button>
-      <span class="page-icon">&#128100;</span>
-      <button
-        class="arrow-btn"
-        :disabled="page === totalPages"
-        @click="nextPage"
-      >&#x276F;&#x276F;</button>
-    </div> -->
+    <BottomBar :showMenu="true" 
+               :titleIcon="require('@/assets/Icons/user.svg')" 
+               :titleIconAlt="'user icon'"
+                :titleIconClass="'user-icon'"
+               @goBack="goBack"/>
   </div>
 </template>
 
@@ -36,16 +28,14 @@
   pointer-events: none;
 }
 .menu-bg {
-  width: 100vw;
-  min-height: 100vh;
-  background: #222;
-  color: #fff;
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 2rem 0.7rem 1.2rem 0.7rem;
   box-sizing: border-box;
-  position: fixed;
   left: 0;
   top: 0;
   z-index: 1000;
@@ -105,7 +95,7 @@
 }
 .records {
   width: 90%;
-  margin-bottom: 0;
+  margin-bottom: 25px;
 }
 .record-row {
   background: #fff;
@@ -129,34 +119,7 @@
     text-align: center;
   }
 }
-.pagination-bar {
-  background: #111;
-  padding: 16px 0 0 0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  position: fixed;
-  left: 0;
-  bottom: 0;
-  width: 100%;
-  .arrow-btn {
-    background: none;
-    border: none;
-    color: #fff;
-    font-size: 2.4rem;
-    padding: 0 24px;
-    cursor: pointer;
-    opacity: 0.95;
-    &:disabled {
-      opacity: 0.5;
-      cursor: default;
-    }
-  }
-  .page-icon {
-    font-size: 2.2rem;
-    color: #fff;
-  }
-}
+
 
 @media (max-width: 300px) {
   .menu-bg {
@@ -265,13 +228,28 @@
 </style>
 
 <script>
+import BottomBar from "@/components/BottomBar.vue";
+import { ref } from "vue";
+import { useRouter } from "vue-router";
+const router = useRouter();
+const login = ref({
+  email: "",
+  password: "",
+});
+
+function goBack() {
+  router.back();
+}
+
+function onLogin() {
+  console.log("Login info", login.value);
+}
 export default {
   name: "HistoryPage",
+  components: { BottomBar },
   data() {
     return {
       search: "",
-      page: 1,
-      pageSize: 10,
       records: [
         { id: 1, leftName: "蘋果", leftCount: 2, rightName: "鳳梨", rightCount: 1 },
         { id: 2, leftName: "香蕉", leftCount: 3, rightName: "橘子", rightCount: 2 },
@@ -284,7 +262,7 @@ export default {
         { id: 9, leftName: "柚子", leftCount: 1, rightName: "蘋果", rightCount: 2 },
         { id: 10, leftName: "蜜棗", leftCount: 2, rightName: "葡萄", rightCount: 1 },
         { id: 11, leftName: "芒果", leftCount: 2, rightName: "柳丁", rightCount: 1 }
-      ],
+      ]
     };
   },
   computed: {
@@ -296,25 +274,7 @@ export default {
           `${r.leftName}${r.leftCount}`.includes(keyword) ||
           `${r.rightName}${r.rightCount}`.includes(keyword)
       );
-    },
-    totalPages() {
-      return Math.ceil(this.filteredRecords.length / this.pageSize);
-    },
-    paginatedRecords() {
-      const startIdx = (this.page - 1) * this.pageSize;
-      return this.filteredRecords.slice(startIdx, startIdx + this.pageSize);
-    },
-  },
-  methods: {
-    prevPage() {
-      if (this.page > 1) this.page--;
-    },
-    nextPage() {
-      if (this.page < this.totalPages) this.page++;
-    },
-    searchHistory() {
-      this.page = 1;
-    },
+    }
   },
 };
 </script>

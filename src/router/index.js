@@ -3,6 +3,7 @@ import LoginView from "../views/LoginView.vue";
 import RegisterView from "@/views/RegisterView.vue";
 import MenuView from "@/views/MenuView.vue";
 import TradeView from "@/views/TradeView.vue";
+import UserHistoryView from "@/views/UserHistoryView.vue";
 const routes = [
   {
     path: "/login",
@@ -23,6 +24,11 @@ const routes = [
     path: "/trade",
     name: "trade",
     component: TradeView,
+  },
+  {
+    path: "/user_history",
+    name: "user_history",
+    component: UserHistoryView,
   },
 ];
 

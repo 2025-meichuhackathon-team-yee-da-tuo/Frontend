@@ -108,9 +108,13 @@
   padding: 12px 24px;
   font-size: 1.35rem;
   font-weight: 600;
+  .item-name {
+    font-weight: bold;
+    color: inherit; 
+    text-align: center;
+  }
 }
 .select-row {
-  background: #fff;
   color: #222;
   border: 2px solid #e0e0e0;
   transition: background 0.3s, color 0.3s, transform 0.3s, box-shadow 0.3s;
@@ -125,14 +129,6 @@
   transform: scale(1.05);
   box-shadow: 0 4px 18px #2226;
 }
-
-.item-name {
-  font-weight: bold;
-  font-size: 1.1rem;
-  color: inherit; 
-  text-align: center;
-}
-
 
 @media (max-width: 300px) {
   .menu-bg {

@@ -10,7 +10,7 @@
     </router-link>
 
     <div class="btm-bar-header">
-      <img v-if="titleIcon" :src="titleIcon" :alt="titleIconAlt" :class="titleIconClass"/>
+      <img v-if="titleIcon" :src="titleIcon" :alt="titleIconAlt" :class="['icon', titleIconClass]"/>
       <slot v-else>{{ title }}</slot>
     </div>
 
@@ -58,12 +58,17 @@ export default {
   font-size: 1.2rem;
   color: #fff;
 }
-.user-icon {
+.icon {
   width: 24px;
   height: 24px;
   object-fit: contain;
   display: block;
   margin: 0 auto;
+}
+.user-icon {
   transform: translate(4px); 
+}
+.globe-icon {
+  margin: 0 auto;
 }
 </style>

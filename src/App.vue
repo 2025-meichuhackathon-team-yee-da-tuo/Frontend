@@ -1,11 +1,21 @@
 <template>
-  <nav>
+  <!-- <nav> -->
+    <!-- <router-link to="/login"></router-link> -->
     <!-- <router-link to="/">Login</router-link -->
-  </nav>
+  <!-- </nav> -->
   <router-view />
 </template>
 
 <style>
+html, body, #app {
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  background: #222;
+  box-sizing: border-box;
+}
+
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;

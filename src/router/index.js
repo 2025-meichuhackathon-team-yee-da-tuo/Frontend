@@ -44,7 +44,7 @@ const routes = [
     component: SelectItemView,
   },
   {
-    path: "/dashboard/:id",
+    path: "/dashboard/:item",
     name: "dashboard",
     component: DashboardView,
   },

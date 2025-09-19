@@ -1,26 +1,29 @@
 <template>
   <div class="menu-bg">
-    <div class="search-bar">
-      <span class="search-icon"></span>
-      <input type="text" v-model="search" placeholder="search item..." />
+    <div class="dashboard-header">
+      <span class="item-title">{{ itemName }}</span>
+      <div class="title-divider"></div>
     </div>
     <div class="records">
       <div
-        v-for="item in filteredItems"
-        :key="item.id"
-        :class="['record-row', 'select-row', { 'select-active': hoverItem === item.id }]"
-        @mouseenter="hoverItem = item.id"
-        @mouseleave="hoverItem = null"
-        @click="goDashboard(item)"
-        style="cursor:pointer;"
+        v-for="record in records"
+        :key="record.id"
+        class="record-row"
       >
-        <span class="item-name">{{ item.name }}</span>
+        <span class="item-left">{{ record.leftName }} {{ record.leftCount }}</span>
+        <span class="exchange-arrow">⇄</span>
+        <span class="item-right">{{ record.rightName }} {{ record.rightCount }}</span>
       </div>
     </div>
+    <BottomBar
+      :showMenu="true"
+      :titleIcon="require('@/assets/Icons/user.svg')"
+      :titleIconAlt="'user icon'"
+      :titleIconClass="'user-icon'"
+      @goBack="goBack"
+    />
   </div>
 </template>
-
-
 
 <style lang="scss" scoped>
 .fixed-lightbulb {
@@ -49,6 +52,7 @@
   width: 90%;
   border-radius: 12px;
   padding: 10px 16px;
+  // margin-bottom: 16px;
   margin-left: 0; 
   .search-icon {
     flex: 0 0 auto;  
@@ -70,6 +74,7 @@
       box-sizing: border-box;
       background: transparent;
     }
+    // 放大鏡柄
     &::after {
       content: '';
       display: block;
@@ -103,62 +108,52 @@
   border-radius: 11px;
   display: flex;
   align-items: center;
-  justify-content: center;
   margin-top: 14px;
   padding: 12px 24px;
   font-size: 1.35rem;
   font-weight: 600;
-  .item-name {
-    font-weight: bold;
-    color: inherit; 
+  .item-left, .item-right {
+    flex: 1;
+    color: #222;
+    text-align: center;
+  }
+  .exchange-arrow {
+    flex: 0 0 50px;
+    font-size: 2.1rem;
+    -webkit-text-stroke: 1px #222; 
+    color: #222;
     text-align: center;
   }
 }
-.select-row {
-  color: #222;
-  border: 2px solid #e0e0e0;
-  transition: background 0.3s, color 0.3s, transform 0.3s, box-shadow 0.3s;
-  box-shadow: 0 2px 8px #2221;
+.dashboard-header {
+  width: 90%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 1.2rem;
 }
-
-.select-active,
-.select-row:hover {
-  background: #222;
+.item-title {
+  font-size: 2rem;
+  font-weight: 700;
   color: #fff;
-  border-color: #ddd;
-  transform: scale(1.05);
-  box-shadow: 0 4px 18px #2226;
+  letter-spacing: 2px;
+  text-align: center;
+  width: 100%;
+  margin-bottom: 0.5rem;
+}
+.title-divider {
+  width: 100%;
+  height: 2px;
+  background: #fff;
+  opacity: 0.45;
+  margin-bottom: 0.2rem;
+  border-radius: 1.5px;
 }
 
 @media (max-width: 300px) {
   .menu-bg {
     font-size: 0.79rem;
     padding: 3vh 0vw 3vh 0vw;
-  }
-  .search-bar {
-    .search-icon {
-      width: 13px;
-      height: 13px;
-      margin-right: 5px;
-      &::before {
-        width: 8px;
-        height: 8px;
-        border: 1px solid #fff;
-        left: 1px;
-        top: 2px;
-      }
-      &::after {
-        width: 4px;
-        height: 1px;
-        bottom: 2.7px;
-        right: 2.7px;
-      }
-    }
-    input {
-      padding: 6px 10px;
-      border-radius: 4px;
-      font-size: 0.68rem;
-    }
   }
   .record-row {
     border-radius: 8px;
@@ -178,37 +173,15 @@
       text-align: center;
     }
   }
+  .dashboard-header { margin-bottom: 0.8rem; }
+  .item-title { font-size: 1.16rem; }
+  .title-divider { height: 1px; margin-bottom: 0.14rem; }
 }
 
 @media (max-width: 200px) {
   .menu-bg {
     font-size: 0.49rem;
-    padding: 0vh 0vw 0vh 0vw;
-  }
-  .search-bar {
-    .search-icon {
-      width: 7px;
-      height: 7px;
-      margin-right: 5px;
-      &::before {
-        width: 6px;
-        height: 6px;
-        border: 1px solid #fff;
-        left: 0px;
-        top: 0px;
-      }
-      &::after {
-        width: 3.5px;
-        height: 1px;
-        bottom: 0.5px;
-        right: -0px;
-      }
-    }
-    input {
-      padding: 4px 6px;
-      border-radius: 2px;
-      font-size: 0.4rem;
-    }
+    padding: 2vh 0vw 0vh 0vw;
   }
   .records {
     width: 90%;
@@ -232,6 +205,9 @@
       text-align: center;
     }
   }
+  .dashboard-header { margin-bottom: 0.28rem; }
+  .item-title { font-size: 0.58rem; margin-bottom: 0.08rem; }
+  .title-divider { height: 1px; margin-bottom: 0.08rem; }
 }
 
 </style>
@@ -239,49 +215,43 @@
 <script>
 import BottomBar from "@/components/BottomBar.vue";
 import { ref } from "vue";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 const router = useRouter();
+const login = ref({
+  email: "",
+  password: "",
+});
 
 function goBack() {
   router.back();
 }
 
+function onLogin() {
+  console.log("Login info", login.value);
+}
 export default {
-  name: "SelectItemPage",
+  name: "DashboardPage",
   components: { BottomBar },
   data() {
     return {
-      search: "",
-      hoverItem: null,  
-      items: [
-        { id: 1, name: "蘋果" },
-        { id: 2, name: "香蕉" },
-        { id: 3, name: "芒果" },
-        { id: 4, name: "西瓜" },
-        { id: 5, name: "鳳梨" },
-        { id: 6, name: "柳丁" },
-        { id: 7, name: "柚子" },
-        { id: 8, name: "葡萄" },
-        { id: 9, name: "蜜棗" },
-        { id: 10, name: "百香果" }
-      ]
+      records: [
+        { id: 1, leftName: "蘋果", leftCount: 2, rightName: "鳳梨", rightCount: 1 },
+        { id: 2, leftName: "蘋果", leftCount: 1, rightName: "芒果", rightCount: 1 },
+        { id: 3, leftName: "葡萄", leftCount: 3, rightName: "蘋果", rightCount: 3 },
+        { id: 4, leftName: "柚子", leftCount: 1, rightName: "蘋果", rightCount: 2 },
+      ],
+      itemName: "", 
     };
   },
-  computed: {
-    filteredItems() {
-      if (!this.search) return this.items;
-      const keyword = this.search.trim();
-      return this.items.filter(
-        item => item.name.includes(keyword)
-      );
-    }
+  created() {
+    const route = useRoute();
+    this.itemName = route.params.item || "";
   },
   methods: {
-    goDashboard(item) {
-      // this.$router.push({ name: 'user_history' });
-      this.$router.push({ name: 'dashboard', params: { item: item.name } });
-    }
-  }
+    goBack() {
+      this.$router.push({ name: "select_item" });
+    },
+  },
 };
 </script>
 

@@ -1,84 +1,3 @@
-<template>
-  <div class="trade-bg">
-    <GuideButton ref="guideBtn" />
-    
-    <div class="trade-content">
-      <div class="item-section-own">
-        <div class="label-row">
-          <span class="label">Owned Item</span>
-          <span class="label">Quantity</span>
-        </div>
-        <div class="input-row">
-          <button 
-            class="input input-name item-btn"
-            @click="goSelect('owned')"
-            type="button"
-          >
-            <span v-if="ownedItemName">{{ ownedItemName }}</span>
-            <span v-else>+</span>
-          </button>
-          <input
-            v-model.number="ownedItemQty"
-            :placeholder="ownedQtyHint"
-            type="number"
-            min="1"
-            class="input input-qty"
-            :class="{ 'error': errors.quantity_a }"
-          />
-        </div>
-        <div v-if="errors.item_a" class="error-message">{{ errors.item_a }}</div>
-        <div v-if="errors.quantity_a" class="error-message">{{ errors.quantity_a }}</div>
-      </div>
-
-      <div class="arrow-row">
-        <span class="arrow-icon">↓</span>
-      </div>
-
-      <div class="item-section-desire">
-        <div class="label-row">
-          <span class="label">Desired Item</span>
-          <span class="label">Quantity</span>
-        </div>
-        <div class="input-row">
-          <button 
-            class="input input-name item-btn"
-            @click="goSelect('desired')"
-            type="button"
-          >
-            <span v-if="desiredItemName">{{ desiredItemName }}</span>
-            <span v-else>+</span>
-          </button>
-          <input
-            v-model.number="desiredItemQty"
-            :placeholder="desiredQtyHint"
-            type="number"
-            min="1"
-            class="input input-qty"
-            :class="{ 'error': errors.quantity_b }"
-          />
-        </div>
-        <div v-if="errors.item_b" class="error-message">{{ errors.item_b }}</div>
-        <div v-if="errors.quantity_b" class="error-message">{{ errors.quantity_b }}</div>
-      </div>
-
-      <div class="button-section">
-        <button 
-          ref="submitBtn"
-          class="submit-btn" 
-          @click="submitTrade"
-          :disabled="isLoading"
-        >
-          {{ isLoading ? 'Loading...' : 'Add Trade' }}
-        </button>
-      </div>
-      
-      <div v-if="errors.general" class="general-error">{{ errors.general }}</div>
-    </div>
-    
-    <BottomBar :showMenu="true" title="Trade" currentView="trade" />
-  </div>
-</template>
-
 <script setup>
 import BottomBar from "@/components/BottomBar.vue"
 import GuideButton from "@/components/GuideButton.vue"
@@ -95,6 +14,7 @@ const ownedItemQty = ref()
 const desiredItemName = ref("")
 const desiredItemQty = ref()
 const isLoading = ref(false)
+const recommendRate = ref(null)
 const errors = ref({
   item_a: '',
   quantity_a: '',
@@ -104,9 +24,27 @@ const errors = ref({
 })
 
 const submitBtn = ref(null)
-const guideBtn = ref(null)  // Ref for GuideButton
+const guideBtn = ref(null)
 
-// Authentication check function
+const finalOwnedQty = computed(() => {
+  return ownedItemQty.value || 1
+})
+
+const finalDesiredQty = computed(() => {
+  return desiredItemQty.value || (recommendRate.value ? Math.round(recommendRate.value) : 2)
+})
+
+const isRateInvalid = computed(() => {
+  if (!recommendRate.value || !finalOwnedQty.value || !finalDesiredQty.value) {
+    return false
+  }
+  
+  const currentRate = finalDesiredQty.value / finalOwnedQty.value
+  const recommendedRate = recommendRate.value
+  
+  return currentRate > recommendedRate * 1.5 || currentRate < recommendedRate * 0.66
+})
+
 function checkAuthStatus() {
   userStore.restoreUser()
   if (!userStore.isLoggedIn || !userStore.email) {
@@ -115,6 +53,39 @@ function checkAuthStatus() {
   }
   return true
 }
+
+async function fetchRecommendRate() {
+  if (!ownedItemName.value || !desiredItemName.value) {
+    recommendRate.value = null
+    return
+  }
+
+  try {
+    const response = await fetch(`/api/trade/graph/path/${encodeURIComponent(ownedItemName.value)}/${encodeURIComponent(desiredItemName.value)}`)
+    
+    if (response.ok) {
+      const data = await response.json()
+      if (data.paths_found === 0) {
+        recommendRate.value = 0
+      } else {
+        recommendRate.value = data.recommand_rate || null
+      }
+    } else {
+      recommendRate.value = null
+    }
+  } catch (error) {
+    console.error('Failed to fetch recommend rate:', error)
+    recommendRate.value = null
+  }
+}
+
+watch([ownedItemName, desiredItemName], async () => {
+  if (ownedItemName.value && desiredItemName.value) {
+    await fetchRecommendRate()
+  } else {
+    recommendRate.value = null
+  }
+})
 
 onMounted(() => {
   if (!checkAuthStatus()) return
@@ -127,7 +98,6 @@ onMounted(() => {
     });
   }
 
-  // Auto focus on GuideButton after DOM render
   nextTick(() => {
     if (guideBtn.value && guideBtn.value.$el) {
       guideBtn.value.$el.focus();
@@ -171,15 +141,17 @@ watch(() => desiredItemName.value, () => { errors.value.item_b = '' })
 watch(() => desiredItemQty.value, () => { errors.value.quantity_b = '' })
 
 const ownedQtyHint = computed(() => {
-  if (!ownedItemQty.value) return "1"
-  if (ownedItemQty.value < 1) return "INVALID"
-  return ""
+  return "1"
 })
 
 const desiredQtyHint = computed(() => {
-  if (!desiredItemQty.value) return "2"
-  if (desiredItemQty.value < 1) return "INVALID"
-  return ""
+  if (recommendRate.value === 0) {
+    return "1"
+  }
+  if (recommendRate.value !== null) {
+    return Math.round(recommendRate.value).toString()
+  }
+  return "2"
 })
 
 async function submitTrade() {
@@ -194,23 +166,30 @@ async function submitTrade() {
   }
 
   if (!ownedItemName.value) errors.value.item_a = 'Please enter the name of the item you own'
-  if (!ownedItemQty.value) errors.value.quantity_a = 'Please enter the quantity you own'
   if (!desiredItemName.value) errors.value.item_b = 'Please enter the name of the item you want'
-  if (!desiredItemQty.value) errors.value.quantity_b = 'Please enter the quantity you want'
-
-  if (ownedItemQty.value < 1) errors.value.quantity_a = 'Quantity must be greater than 0'
-  if (desiredItemQty.value < 1) errors.value.quantity_b = 'Quantity must be greater than 0'
   
-  if (errors.value.item_a || errors.value.quantity_a || errors.value.item_b || errors.value.quantity_b) return
+  if (errors.value.item_a || errors.value.item_b) return
+
+  const submitOwnedQty = finalOwnedQty.value
+  const submitDesiredQty = finalDesiredQty.value
+
+  if (submitOwnedQty < 1) errors.value.quantity_a = 'Quantity must be greater than 0'
+  if (submitDesiredQty < 1) errors.value.quantity_b = 'Quantity must be greater than 0'
+  
+  if (errors.value.quantity_a || errors.value.quantity_b) return
+
+  if (isRateInvalid.value) {
+    return
+  }
 
   isLoading.value = true
 
   const params = new URLSearchParams({
     user_a: userStore.email,
     item_a: ownedItemName.value,
-    quantity_a: parseInt(ownedItemQty.value).toString(),
+    quantity_a: submitOwnedQty.toString(),
     item_b: desiredItemName.value,
-    quantity_b: parseInt(desiredItemQty.value).toString()
+    quantity_b: submitDesiredQty.toString()
   })
 
   try {
@@ -222,11 +201,16 @@ async function submitTrade() {
     const data = await response.json()
 
     if (response.ok) {
-      ownedItemName.value = ""
-      ownedItemQty.value = null
-      desiredItemName.value = ""
-      desiredItemQty.value = null
-      router.push({ name: 'menu', query: { view: 'history' } })
+      if (data.code === -1) {
+        errors.value.general = 'Trade rejected due to excessive exchange rate difference, considered invalid record'
+      } else {
+        ownedItemName.value = ""
+        ownedItemQty.value = null
+        desiredItemName.value = ""
+        desiredItemQty.value = null
+        recommendRate.value = null
+        router.push({ name: 'menu', query: { view: 'history' } })
+      }
     } else {
       errors.value.general = 'Failed to create trade, please try again later'
     }
@@ -235,11 +219,6 @@ async function submitTrade() {
   } finally {
     isLoading.value = false
   }
-  
-  ownedItemName.value = ""
-  ownedItemQty.value = null
-  desiredItemName.value = ""
-  desiredItemQty.value = null
 }
 
 function goSelect(type) {
@@ -258,10 +237,102 @@ function goSelect(type) {
 function syncFromQuery(){
   if(route.query.ownedItem) ownedItemName.value = route.query.ownedItem
   if(route.query.desiredItem) desiredItemName.value = route.query.desiredItem
+  
+  if (route.query.ownedItem && route.query.desiredItem) {
+    nextTick(() => {
+      fetchRecommendRate()
+    })
+  }
 }
 
 watch(() => route.query, syncFromQuery, { immediate: true, deep: true })
 </script>
+
+<template>
+  <div class="trade-bg">
+    <GuideButton ref="guideBtn" />
+    
+    <div class="trade-content">
+      <div class="item-section-own">
+        <div class="label-row">
+          <span class="label">Owned Item</span>
+          <span class="label">Quantity</span>
+        </div>
+        <div class="input-row">
+          <button 
+            class="input input-name item-btn"
+            @click="goSelect('owned')"
+            type="button"
+          >
+            <span v-if="ownedItemName">{{ ownedItemName }}</span>
+            <span v-else>+</span>
+          </button>
+          <input
+            v-model.number="ownedItemQty"
+            :placeholder="ownedQtyHint"
+            type="number"
+            min="1"
+            class="input input-qty"
+            :class="{ 'error': errors.quantity_a }"
+          />
+        </div>
+        <div v-if="errors.item_a" class="error-message">{{ errors.item_a }}</div>
+        <div v-if="errors.quantity_a" class="error-message">{{ errors.quantity_a }}</div>
+      </div>
+
+      <div class="arrow-row">
+        <span 
+          class="arrow-icon" 
+          :class="{ 'invalid': isRateInvalid }"
+        >
+          {{ isRateInvalid ? '✕' : '↓' }}
+        </span>
+      </div>
+
+      <div class="item-section-desire">
+        <div class="label-row">
+          <span class="label">Desired Item</span>
+          <span class="label">Quantity</span>
+        </div>
+        <div class="input-row">
+          <button 
+            class="input input-name item-btn"
+            @click="goSelect('desired')"
+            type="button"
+          >
+            <span v-if="desiredItemName">{{ desiredItemName }}</span>
+            <span v-else>+</span>
+          </button>
+          <input
+            v-model.number="desiredItemQty"
+            :placeholder="desiredQtyHint"
+            type="number"
+            min="1"
+            class="input input-qty"
+            :class="{ 'error': errors.quantity_b }"
+          />
+        </div>
+        <div v-if="errors.item_b" class="error-message">{{ errors.item_b }}</div>
+        <div v-if="errors.quantity_b" class="error-message">{{ errors.quantity_b }}</div>
+      </div>
+
+      <div class="button-section">
+        <button 
+          ref="submitBtn"
+          class="submit-btn" 
+          @click="submitTrade"
+          :disabled="isLoading || isRateInvalid"
+        >
+          {{ isLoading ? 'Loading...' : 'Add Trade' }}
+        </button>
+      </div>
+      
+      <div v-if="errors.general" class="general-error">{{ errors.general }}</div>
+    </div>
+    
+    <BottomBar :showMenu="true" title="Trade" currentView="trade" />
+  </div>
+</template>
 
 <style scoped>
 .trade-bg {
@@ -289,12 +360,12 @@ watch(() => route.query, syncFromQuery, { immediate: true, deep: true })
   display: flex;
   justify-content: space-between;
   margin-bottom: 0.5rem;
-  
-  .label {
-    font-size: 0.9rem;
-    color: #ccc;
-    font-weight: 500;
-  }
+}
+
+.label {
+  font-size: 0.9rem;
+  color: #ccc;
+  font-weight: 500;
 }
 
 .input-row {
@@ -312,27 +383,27 @@ watch(() => route.query, syncFromQuery, { immediate: true, deep: true })
   background: #fff;
   color: #222;
   transition: all 0.2s ease;
-  
-  &:focus {
-    outline: 3px solid #FF9800 !important; /* 橘色邊框，寬度3px */
-    outline-offset: 2px; /* 邊框與元素的間距 */
-    box-shadow: 0 0 0 1px rgba(255, 152, 0, 0.3) !important; /* 統一陰影效果 */
-  }
-  
-  &::placeholder {
-    color: #999;
-  }
-  
-  &.error {
-    border-color: #ff4444;
-    box-shadow: 0 0 0 2px rgba(255, 68, 68, 0.3);
-  }
-  
-  &.error:focus {
-    outline: 3px solid #FF9800 !important; /* 錯誤狀態的橘色邊框 */
-    outline-offset: 2px;
-    box-shadow: 0 0 0 1px rgba(255, 152, 0, 0.3) !important;
-  }
+}
+
+.input:focus {
+  outline: 3px solid #FF9800 !important;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 1px rgba(255, 152, 0, 0.3) !important;
+}
+
+.input::placeholder {
+  color: #999;
+}
+
+.input.error {
+  border-color: #ff4444;
+  box-shadow: 0 0 0 2px rgba(255, 68, 68, 0.3);
+}
+
+.input.error:focus {
+  outline: 3px solid #FF9800 !important;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 1px rgba(255, 152, 0, 0.3) !important;
 }
 
 .input-name {
@@ -345,10 +416,10 @@ watch(() => route.query, syncFromQuery, { immediate: true, deep: true })
   max-width: 6rem;
   min-width: 0;
   text-align: center;
-  
-  &::placeholder {
-    text-align: center;
-  }
+}
+
+.input-qty::placeholder {
+  text-align: center;
 }
 
 .error-message {
@@ -382,6 +453,12 @@ watch(() => route.query, syncFromQuery, { immediate: true, deep: true })
   color: #fff;
   font-weight: bold;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  transition: color 0.3s ease;
+}
+
+.arrow-icon.invalid {
+  color: #ff4444;
+  text-shadow: 0 2px 4px rgba(255, 68, 68, 0.3);
 }
 
 .item-section-own, .item-section-desire {
@@ -417,50 +494,51 @@ watch(() => route.query, syncFromQuery, { immediate: true, deep: true })
   font-size: 1.1rem;
   font-weight: 600;
   transition: all 0.2s ease;
-  
-  &:focus {
-    outline: 3px solid #FF9800 !important; /* 橘色邊框，寬度3px */
-    outline-offset: 2px; /* 邊框與元素的間距 */
-    box-shadow: 0 0 0 1px rgba(255, 152, 0, 0.3) !important; /* 統一陰影效果 */
-  }
-  
-  &:hover:not(:disabled) {
-    background: #000;
-  }
-  
-  &:active:not(:disabled) {
-    transform: translateY(1px);
-  }
-  
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-  
-  &:disabled:focus {
-    outline: 3px solid #666 !important; /* 禁用狀態的灰色邊框 */
-    outline-offset: 2px;
-    box-shadow: 0 0 0 1px rgba(102, 102, 102, 0.3) !important;
-    background: #19181a; /* 保持原背景色 */
-  }
+}
+
+.submit-btn:focus {
+  outline: 3px solid #FF9800 !important;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 1px rgba(255, 152, 0, 0.3) !important;
+}
+
+.submit-btn:hover:not(:disabled) {
+  background: #000;
+}
+
+.submit-btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.submit-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background: #666;
+}
+
+.submit-btn:disabled:focus {
+  outline: 3px solid #666 !important;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 1px rgba(102, 102, 102, 0.3) !important;
+  background: #666;
 }
 
 .item-btn {
   cursor: pointer;
-  
-  &:focus {
-    outline: 3px solid #FF9800 !important; /* 橘色邊框，寬度3px */
-    outline-offset: 2px; /* 邊框與元素的間距 */
-    box-shadow: 0 0 0 1px rgba(255, 152, 0, 0.3) !important; /* 統一陰影效果 */
-  }
-  
-  &:hover {
-    background: #f0f0f0;
-  }
-  
-  &:hover:focus {
-    background: #f0f0f0; /* hover + focus 時保持hover的背景色 */
-  }
+}
+
+.item-btn:focus {
+  outline: 3px solid #FF9800 !important;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 1px rgba(255, 152, 0, 0.3) !important;
+}
+
+.item-btn:hover {
+  background: #f0f0f0;
+}
+
+.item-btn:hover:focus {
+  background: #f0f0f0;
 }
 
 @media (max-width: 300px) {

@@ -162,6 +162,7 @@ async function fetchMostFreqPair() {
   }
   
   input {
+    width: 100%;
     flex: 1;
     background: #fff;
     border: 0;
@@ -246,6 +247,7 @@ async function fetchMostFreqPair() {
     }
     
     input {
+      width: 100%;
       padding: 6px 10px;
       font-size: 0.9rem;
     }
@@ -303,6 +305,7 @@ async function fetchMostFreqPair() {
     }
     
     input {
+      width: 100%;
       padding: 0.27rem 0.33rem;
       font-size: 0.6rem; 
     }

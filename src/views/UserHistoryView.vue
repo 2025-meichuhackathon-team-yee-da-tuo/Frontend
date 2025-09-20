@@ -168,6 +168,7 @@ async function fetchTradeHistory() {
   }
   
   input {
+    width: 100%;
     flex: 1;
     background: #fff;
     border: 0;
@@ -222,11 +223,6 @@ async function fetchTradeHistory() {
   }
 }
 
-@media (max-width: 480px) {
-  .history-content {
-    padding: 2.5rem 0.5rem 1rem 0.5rem;
-  }
-}
 
 @media (max-width: 300px) {
   .history-content {
@@ -258,6 +254,7 @@ async function fetchTradeHistory() {
     }
     
     input {
+      width: 100%;
       padding: 6px 10px;
       border-radius: 6px;
       font-size: 0.9rem;
@@ -319,6 +316,7 @@ async function fetchTradeHistory() {
     }
     
     input {
+      width: 100%;
       padding: 0.2rem 0.25rem;
       border-radius: 0.2rem;
       font-size: 0.5rem;

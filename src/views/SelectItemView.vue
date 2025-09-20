@@ -1,28 +1,29 @@
 <template>
-  <div class="menu-bg">
+  <div class="select-bg">
     <div class="search-bar">
       <span class="search-icon"></span>
-      <input type="text" v-model="search" placeholder="search item..." />
+      <input ref="searchInput" type="text" v-model="search" placeholder="search item..." />
     </div>
     <div class="records">
+      <div v-if="filteredItems.length >= 0" class="recent-label">Recent Record</div>
       <div v-if="isLoading" class="loading-message">Loading...</div>
       <div v-else
-        v-for="item in filteredItems"
+        v-for="(item, idx) in filteredItems"
         :key="item.id"
-        :class="['record-row', 'select-row', { 'select-active': hoverItem === item.id }]"
-        @mouseenter="hoverItem = item.id"
-        @mouseleave="hoverItem = null"
+        class="record-row"
+        tabindex="0"
+        ref="rows"
+        @focus="scrollIntoView($event)"
         @click="selectItem(item)"
+        @keydown="handleRowKeydown($event, idx)"
         style="cursor:pointer;"
       >
         <span class="item-name">{{ item.name }}</span>
       </div>
     </div>
-    <BottomBar :showMenu="false" title="Select Item" />
+    <BottomBar :showMenu="false" title="Select Item" currentView="select_item" />
   </div>
 </template>
-
-
 
 <style lang="scss" scoped>
 .fixed-lightbulb {
@@ -32,166 +33,112 @@
   font-size: 6vw;
   pointer-events: none;
 }
-.menu-bg {
+.select-bg {
   width: 100%;
-  height: 100%;
-  overflow-x: hidden;
+  max-width: 100vw;
+  min-height: 100vh;
+  background: #222;
+  color: #fff;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 2rem 0.7rem 1.2rem 0.7rem;
   box-sizing: border-box;
-  left: 0;
-  top: 0;
-  z-index: 1000;
+  position: relative;
 }
 .search-bar {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   display: flex;
   align-items: center;
-  width: 90%;
   border-radius: 12px;
-  padding: 10px 16px;
-  margin-left: 0; 
+  padding: 1rem 1rem 0.8rem 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 101;
+  background: #222;
   .search-icon {
     flex: 0 0 auto;  
     display: inline-block;
-    width: 24px;
-    height: 24px;
+    width: 13px;
+    height: 13px;
     position: relative;
-    margin-right: 15px;
+    margin-right: 5px;
     &::before {
       content: '';
       display: block;
-      width: 16px;
-      height: 16px;
-      border: 2px solid #fff;
+      width: 8px;
+      height: 8px;
+      border: 1px solid #fff;
       border-radius: 50%;
       position: absolute;
-      left: 2px;
-      top: 2px;
+      left: 1px;
+      top: 1px;
       box-sizing: border-box;
       background: transparent;
     }
     &::after {
       content: '';
       display: block;
-      width: 8px;
-      height: 2px;
+      width: 4px;
+      height: 1px;
       border-radius: 2px;
       background: #fff;
       position: absolute;
-      bottom: 5px;
-      right: 2px;
+      bottom: 2.7px;
+      right: 2.7px;
       transform: rotate(45deg);
     }
   }
   input {
-    flex: 1 1 0%;  
-    flex: 1;
+    flex: 1 1 0;  
+    width: 100%;
+    min-width: 0;
     background: #fff;
     border: 0;
-    border-radius: 8px;
-    padding: 8px 12px;
-    font-size: 1.1rem;
+    border-radius: 4px;
+    padding: 6px 10px;
+    font-size: 0.88rem;
     outline: none;
   }
 }
+.recent-label {
+  color: #bbb;
+  font-size: 0.62rem;
+  font-weight: 400;
+  margin: 0.5rem 0 0.3rem 0.2rem;
+  letter-spacing: 1px;
+}
 .records {
   width: 90%;
-  margin-bottom: 25px;
+  margin: 0px auto;
+  padding-bottom: 4rem;
 }
 .record-row {
   background: #fff;
-  border-radius: 11px;
+  color: #222;
+  border-radius: 8px;
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-top: 14px;
-  padding: 12px 24px;
-  font-size: 1.35rem;
+  margin-bottom: 12px;
+  padding: 3px 12px;
+  font-size: 1rem;
   font-weight: 600;
-  .item-name {
-    font-weight: bold;
-    color: inherit; 
-    text-align: center;
-  }
-}
-.select-row {
-  color: #222;
-  border: 2px solid #e0e0e0;
-  transition: background 0.3s, color 0.3s, transform 0.3s, box-shadow 0.3s;
-  box-shadow: 0 2px 8px #2221;
 }
 
-.select-active,
-.select-row:hover {
-  background: #222;
-  color: #fff;
-  border-color: #ddd;
-  transform: scale(1.05);
-  box-shadow: 0 4px 18px #2226;
-}
-
-@media (max-width: 300px) {
-  .menu-bg {
-    font-size: 0.79rem;
-    padding: 3vh 0vw 3vh 0vw;
-  }
-  .search-bar {
-    .search-icon {
-      width: 13px;
-      height: 13px;
-      margin-right: 5px;
-      &::before {
-        width: 8px;
-        height: 8px;
-        border: 1px solid #fff;
-        left: 1px;
-        top: 2px;
-      }
-      &::after {
-        width: 4px;
-        height: 1px;
-        bottom: 2.7px;
-        right: 2.7px;
-      }
-    }
-    input {
-      padding: 6px 10px;
-      border-radius: 4px;
-      font-size: 0.68rem;
-    }
-  }
-  .record-row {
-    border-radius: 8px;
-    margin-top: 9px;
-    padding: 3px 12px;
-    font-size: 1rem;
-    .item-left, .item-right {
-      flex: 1;
-      color: #222;
-      text-align: center;
-    }
-    .exchange-arrow {
-      flex: 0 0 40px;
-      font-size: 1rem;
-      -webkit-text-stroke: 0.5px #222;
-      color: #222;
-      text-align: center;
-    }
-  }
-}
 
 @media (max-width: 200px) {
-  .menu-bg {
+  .select-bg {
     font-size: 0.49rem;
     padding: 0vh 0vw 0vh 0vw;
   }
   .search-bar {
+    padding: 0.5rem 0.7rem 0.5rem 0.7rem;
+    border-radius: 6px;
     .search-icon {
       width: 7px;
       height: 7px;
-      margin-right: 5px;
       &::before {
         width: 6px;
         height: 6px;
@@ -203,36 +150,23 @@
         width: 3.5px;
         height: 1px;
         bottom: 0.5px;
-        right: -0px;
+        right: 0px;
       }
     }
     input {
       padding: 4px 6px;
-      border-radius: 2px;
-      font-size: 0.4rem;
+      border-radius: 4px;
+      font-size: 0.6rem;
     }
   }
   .records {
     width: 90%;
-    margin-top: -8px;
   }
   .record-row {
     border-radius: 5px;
-    margin-top: 7px;
+    margin-bottom: 7px;
     padding: 2px 3px;
     font-size: 0.52rem;
-    .item-left, .item-right {
-      flex: 1;
-      color: #222;
-      text-align: center;
-    }
-    .exchange-arrow {
-      flex: 0 0;
-      font-size: 0.5rem;
-      -webkit-text-stroke: 0.5px #222;
-      color: #222;
-      text-align: center;
-    }
   }
 }
 
@@ -240,7 +174,7 @@
 
 <script>
 import BottomBar from "@/components/BottomBar.vue";
-import { ref } from "vue";
+import { ref, onMounted, onUnmounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 const router = useRouter();
 
@@ -278,7 +212,7 @@ export default {
           return;
         }
         this.fetchFuzzyItems(keyword);
-      }, 150);
+      }, 1);
     }
   },
   methods: {
@@ -295,19 +229,19 @@ export default {
           method: "GET",
           headers: { "Content-Type": "application/json" }
         });
-
         const data = await resp.json();
+        const norm = s => (s ?? "").trim().toLowerCase();
+        const hasExact = data.some(name => norm(name) === norm(keyword));
 
-        if (resp.ok && Array.isArray(data)) {
-          // API 回傳的是字串陣列 → 轉成 { id, name } 給前端用
-          this.items = data.map((name, idx) => ({ id: idx + 1, name }));
-        } else {
-          console.error("Failed to fetch fuzzy items:", data);
-          this.items = [];
-        }
+        // 合併：若沒有精確匹配，將 keyword 放最前；並做去重（以正規化後的字串為 key）
+        const merged = hasExact ? data : [keyword, ...data];
+
+        // 轉回你原本使用的 { id, name } 結構
+        this.items = merged.map((name, i) => ({ id: i + 1, name }));
       } catch (err) {
         console.error("Error fetching fuzzy items:", err);
-        this.items = [];
+        // 即使失敗，也把輸入字放第一個，維持體驗
+        this.items = keyword ? [{ id: 1, name: keyword }] : [];
       } finally {
         this.isLoading = false;
       }
@@ -323,7 +257,79 @@ export default {
       if (type === 'desired') newQuery.desiredItem = item.name
 
       this.$router.push({ name: 'trade', query: newQuery })
+    },
+    scrollIntoView(e) {
+      setTimeout(() => {
+        const element = e.target;
+        const elementRect = element.getBoundingClientRect();
+        const viewportHeight = window.innerHeight;
+        const searchBarHeight = 35; // 根據你的 BottomBar 高度調整
+        const bottomBarHeight = 80; // 根據你的 BottomBar 高度調整
+        // print elementRect.top
+        console.log('elementRect.top:', elementRect.top);
+        console.log('searchBarHeight:', searchBarHeight);
+        if (elementRect.bottom > viewportHeight - bottomBarHeight) {
+          element.scrollIntoView({ 
+            block: 'center', 
+            behavior: 'smooth' 
+          });
+        }
+        else if (elementRect.top < searchBarHeight) {
+          element.scrollIntoView({ 
+            block: 'center', 
+            behavior: 'smooth' 
+          });
+        }
+      }, 25);
+    },
+    handleRowKeydown(e, idx) {
+      const keys = [
+        "0","1","2","3","4","5","6","7","8","9","*","#",
+        ..."abcdefghijklmnopqrstuvwxyz",
+        ..."ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+      ];
+      if (keys.includes(e.key)) {
+        if (this.$refs.searchInput && this.$refs.searchInput.focus) {
+          if (document.activeElement == this.$refs.searchInput)
+            this.search += e.key;
+          this.$refs.searchInput.focus();
+          const inputEl = this.$refs.searchInput;
+          if (inputEl.setSelectionRange) {
+            inputEl.setSelectionRange(this.search.length, this.search.length);
+          }
+          e.preventDefault();
+        }
+      }
+      // this.items[2] = {id: 3, name: e.key} // debug only
+      if (e.key === "ArrowUp") {
+        e.preventDefault();
+        if (idx > 0) {
+          this.$refs.rows[idx - 1].focus();
+        } else {
+          // focus 回 search bar
+          if (this.$refs.searchInput && this.$refs.searchInput.focus) {
+            this.$refs.searchInput.focus();
+          }
+        }
+      }
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        if (idx < this.filteredItems.length - 1) {
+          this.$refs.rows[idx + 1].focus();
+        }
+      }
     }
   }
 };
+
+// 讓 searchInput 正確綁定到 input DOM
+const searchInput = ref(null);
+
+onMounted(() => {
+  document.addEventListener("keydown", handleKeyDown);
+});
+onUnmounted(() => {
+  document.removeEventListener("keydown", handleKeyDown);
+});
+
 </script>

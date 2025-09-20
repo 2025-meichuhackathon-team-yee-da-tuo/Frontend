@@ -45,11 +45,12 @@ const menuMap = {
   login: [
     { label: "Login", to: { name: "login" } },
     { label: "Register", to: { name: "register" } },
-    { label: "Guide", to: { name: "guide" } },
   ],
   trade: [
     { label: "Trade", to: { name: "trade" } },
     { label: "Guide", to: { name: "guide" } },
+    { label: "History", to: { name: "user_history" } },
+    { label: "Logout", to: { name: "logout" } },
   ],
   user_history: [
     {label: "Global", to: {name: "global_history"}},

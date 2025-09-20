@@ -9,11 +9,14 @@
           <span class="label">Quantity</span>
         </div>
         <div class="input-row">
-          <input 
-            v-model="ownedItemName" 
-            class="input input-name"
-            placeholder="Enter item name"
-          />
+          <button 
+            class="input input-name item-btn"
+            @click="goSelect('owned')"
+            type="button"
+          >
+            <span v-if="ownedItemName">{{ ownedItemName }}</span>
+            <span v-else>+</span>
+          </button>
           <input
             v-model.number="ownedItemQty"
             :placeholder="ownedQtyHint"
@@ -34,11 +37,14 @@
           <span class="label">Quantity</span>
         </div>
         <div class="input-row">
-          <input 
-            v-model="desiredItemName" 
-            class="input input-name"
-            placeholder="Enter item name"
-          />
+          <button 
+            class="input input-name item-btn"
+            @click="goSelect('desired')"
+            type="button"
+          >
+            <span v-if="desiredItemName">{{ desiredItemName }}</span>
+            <span v-else>+</span>
+          </button>
           <input
             v-model.number="desiredItemQty"
             :placeholder="desiredQtyHint"
@@ -63,8 +69,8 @@
 <script setup>
 import BottomBar from "@/components/BottomBar.vue"
 import GuideButton from "@/components/GuideButton.vue"
-import { ref, computed } from "vue"
-import { useRouter } from "vue-router"
+import { ref, computed, onMounted, watch } from "vue"
+import { useRoute, useRouter } from "vue-router"
 
 const router = useRouter()
 
@@ -91,12 +97,23 @@ function goBack() {
 
 function submitTrade() {
   if (!ownedItemName.value || !desiredItemName.value || !ownedItemQty.value || !desiredItemQty.value) {
-    alert("請填寫所有必填欄位")
+    alert(
+      "Trade not submitted:\n" +
+      [
+        !ownedItemName.value ? "- Owned Item is missing." : "",
+        !ownedItemQty.value ? "- Owned Item quantity is missing or invalid." : "",
+        !desiredItemName.value ? "- Desired Item is missing." : "",
+        !desiredItemQty.value ? "- Desired Item quantity is missing or invalid." : "",
+        ""
+      ].filter(Boolean).join('\n') +
+      "\nPlease complete all fields and ensure quantities are greater than 0."
+    )
     return
   }
+
   
   if (ownedItemQty.value < 1 || desiredItemQty.value < 1) {
-    alert("數量必須大於 0")
+    alert("Quantity must be greater than 0")
     return
   }
   
@@ -112,8 +129,34 @@ function submitTrade() {
   }
   
   console.log("Trade data:", tradeData)
-  alert("交易已提交:\n" + JSON.stringify(tradeData, null, 2))
+  alert("Trade submitted:\n" + JSON.stringify(tradeData, null, 2))
+
+  ownedItemName.value = ""
+  ownedItemQty.value = null
+  desiredItemName.value = ""
+  desiredItemQty.value = null
 }
+
+function goSelect(type) {
+  router.push({
+    name: "select_item", 
+    query: {
+      type,
+      ownedItem: ownedItemName.value || "",
+      desiredItem: desiredItemName.value || ""
+    }
+  })
+}
+
+const route = useRoute()
+
+function syncFromQuery(){
+  if(route.query.ownedItem) ownedItemName.value = route.query.ownedItem
+  if(route.query.desiredItem) desiredItemName.value = route.query.desiredItem
+}
+onMounted(syncFromQuery)
+watch(() => route.query, syncFromQuery, { immediate: true, deep: true })
+
 </script>
 
 <style scoped>

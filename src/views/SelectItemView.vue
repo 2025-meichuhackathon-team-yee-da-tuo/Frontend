@@ -11,12 +11,13 @@
         :class="['record-row', 'select-row', { 'select-active': hoverItem === item.id }]"
         @mouseenter="hoverItem = item.id"
         @mouseleave="hoverItem = null"
-        @click="goDashboard(item)"
+        @click="selectItem(item)"
         style="cursor:pointer;"
       >
         <span class="item-name">{{ item.name }}</span>
       </div>
     </div>
+    <BottomBar :showMenu="false" title="Select Item" />
   </div>
 </template>
 
@@ -239,7 +240,7 @@
 <script>
 import BottomBar from "@/components/BottomBar.vue";
 import { ref } from "vue";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 const router = useRouter();
 
 function goBack() {
@@ -277,9 +278,16 @@ export default {
     }
   },
   methods: {
-    goDashboard(item) {
-      // this.$router.push({ name: 'user_history' });
-      this.$router.push({ name: 'dashboard', params: { item: item.name } });
+    selectItem(item) {
+      const type = this.$route.query.type
+      let newQuery = {
+        ownedItem: this.$route.query.ownedItem || "",
+        desiredItem: this.$route.query.desiredItem || "",
+      }
+      if (type === 'owned') newQuery.ownedItem = item.name
+      if (type === 'desired') newQuery.desiredItem = item.name
+
+      this.$router.push({ name: 'trade', query: newQuery })
     }
   }
 };

@@ -5,6 +5,7 @@
       <input ref="searchInput" type="text" v-model="search" placeholder="search item..." />
     </div>
     <div class="records">
+      <div v-if="filteredItems.length >= 0" class="recent-label">Recent Record</div>
       <div
         v-for="(item, idx) in filteredItems"
         :key="item.id"
@@ -98,6 +99,13 @@
     font-size: 0.88rem;
     outline: none;
   }
+}
+.recent-label {
+  color: #bbb;
+  font-size: 0.62rem;
+  font-weight: 400;
+  margin: 0.5rem 0 0.3rem 0.2rem;
+  letter-spacing: 1px;
 }
 .records {
   width: 90%;

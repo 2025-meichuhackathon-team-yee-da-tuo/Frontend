@@ -180,7 +180,7 @@
 
 <script>
 import BottomBar from "@/components/BottomBar.vue";
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, onMounted, onUnmounted, nextTick } from "vue";
 import { useRoute, useRouter } from "vue-router";
 const router = useRouter();
 
@@ -220,6 +220,21 @@ export default {
         this.fetchFuzzyItems(keyword);
       }, 150);
     }
+  },
+  mounted() {
+    // 頁面載入時自動 focus 到搜尋框
+    this.$nextTick(() => {
+      if (this.$refs.searchInput) {
+        this.$refs.searchInput.focus();
+      }
+    });
+    
+    // Add keydown event listener
+    document.addEventListener("keydown", this.handleKeyDown);
+  },
+  unmounted() {
+    // Remove keydown event listener
+    document.removeEventListener("keydown", this.handleKeyDown);
   },
   methods: {
     async fetchFuzzyItems(keyword) {

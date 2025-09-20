@@ -1,6 +1,6 @@
 <template>
   <div class="auth-bg">
-    <GuideButton/>
+    <GuideButton ref="guideBtn"/>
     <div class="auth-content">
       <div class="auth-box">
         <form class="auth-form" @submit.prevent="onRegister">
@@ -62,17 +62,27 @@
 <script setup>
 import BottomBar from "@/components/BottomBar.vue";
 import GuideButton from "@/components/GuideButton.vue";
-import { ref, watch } from "vue";
+import { ref, watch, onMounted, nextTick } from "vue";
 import { useRouter } from "vue-router";
 
 const router = useRouter();
 const form = ref({ email: "", password: "", confirm: "" });
 const isLoading = ref(false);
 const errors = ref({ email: '', password: '', confirm: '' });
+const guideBtn = ref(null);  // Ref for GuideButton
 
 watch(() => form.value.email, () => { errors.value.email = '' });
 watch(() => form.value.password, () => { errors.value.password = '' });
 watch(() => form.value.confirm, () => { errors.value.confirm = '' });
+
+onMounted(() => {
+  // Auto focus on GuideButton after DOM render
+  nextTick(() => {
+    if (guideBtn.value && guideBtn.value.$el) {
+      guideBtn.value.$el.focus();
+    }
+  });
+});
 
 function clearErrors() {
   errors.value = { email: '', password: '', confirm: '' };

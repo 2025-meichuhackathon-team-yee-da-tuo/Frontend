@@ -1,6 +1,6 @@
 <template>
   <div class="login-bg">
-    <GuideButton />
+    <GuideButton ref="guideBtn" />
     <div class="login-content">
       <div class="login-form">
         <div class="form-group">
@@ -43,7 +43,7 @@
 <script setup>
 import BottomBar from "@/components/BottomBar.vue"
 import GuideButton from "@/components/GuideButton.vue"
-import { ref, watch, onMounted, onActivated } from "vue"
+import { ref, watch, onMounted, onActivated, nextTick } from "vue"
 import { useRouter } from "vue-router"
 import { useUserStore } from "@/stores/user"
 
@@ -58,6 +58,7 @@ const errors = ref({
   password: '',
   general: ''
 })
+const guideBtn = ref(null)
 
 function checkLoginStatus() {
   if (userStore.isLoggedIn && userStore.email) {
@@ -69,6 +70,13 @@ function checkLoginStatus() {
 
 onMounted(() => {
   checkLoginStatus()
+
+  // Auto focus on GuideButton after DOM render
+  nextTick(() => {
+    if (guideBtn.value && guideBtn.value.$el) {
+      guideBtn.value.$el.focus();
+    }
+  });
 })
 
 onActivated(() => {

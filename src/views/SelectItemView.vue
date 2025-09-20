@@ -211,7 +211,7 @@ export default {
           return;
         }
         this.fetchFuzzyItems(keyword);
-      }, 150);
+      }, 50);
     }
   },
   methods: {
@@ -228,19 +228,31 @@ export default {
           method: "GET",
           headers: { "Content-Type": "application/json" }
         });
-
         const data = await resp.json();
 
-        if (resp.ok && Array.isArray(data)) {
-          // API 回傳的是字串陣列 → 轉成 { id, name } 給前端用
-          this.items = data.map((name, idx) => ({ id: idx + 1, name }));
-        } else {
-          console.error("Failed to fetch fuzzy items:", data);
-          this.items = [];
-        }
+        // 後端回傳：string[]（建議清單）
+        const list = Array.isArray(data) ? data : [];
+
+        // 規則：若清單中沒有「與輸入完全相同」的字串，就把輸入塞在最上面
+        const norm = s => (s ?? "").trim().toLowerCase();
+        const hasExact = list.some(name => norm(name) === norm(keyword));
+
+        // 合併：若沒有精確匹配，將 keyword 放最前；並做去重（以正規化後的字串為 key）
+        const merged = (hasExact ? list : [keyword, ...list]).filter(Boolean);
+        const seen = new Set();
+        const uniqueNames = merged.filter(n => {
+          const k = norm(n);
+          if (seen.has(k)) return false;
+          seen.add(k);
+          return true;
+        });
+
+        // 轉回你原本使用的 { id, name } 結構
+        this.items = uniqueNames.map((name, i) => ({ id: i + 1, name }));
       } catch (err) {
         console.error("Error fetching fuzzy items:", err);
-        this.items = [];
+        // 即使失敗，也把輸入字放第一個，維持體驗
+        this.items = keyword ? [{ id: 1, name: keyword }] : [];
       } finally {
         this.isLoading = false;
       }

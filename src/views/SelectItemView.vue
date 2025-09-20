@@ -5,7 +5,8 @@
       <input ref="searchInput" type="text" v-model="search" placeholder="search item..." />
     </div>
     <div class="records">
-      <div
+      <div v-if="isLoading" class="loading-message">Loading...</div>
+      <div v-else
         v-for="item in filteredItems"
         :key="item.id"
         class="record-row"
@@ -178,30 +179,65 @@ export default {
   data() {
     return {
       search: "",
-      items: [
-        { id: 1, name: "蘋果" },
-        { id: 2, name: "香蕉" },
-        { id: 3, name: "芒果" },
-        { id: 4, name: "西瓜" },
-        { id: 5, name: "鳳梨" },
-        { id: 6, name: "柳丁" },
-        { id: 7, name: "柚子" },
-        { id: 8, name: "葡萄" },
-        { id: 9, name: "蜜棗" },
-        { id: 10, name: "百香果" }
-      ]
+      hoverItem: null,
+      // 原本硬編的 items 移除，改成動態載入
+      items: [],
+      isLoading: false,
+      _debounceTimer: null
     };
   },
   computed: {
+    // 後端已經幫你做語意過濾了，這裡直接回傳目前 items
     filteredItems() {
-      if (!this.search) return this.items;
-      const keyword = this.search.trim();
-      return this.items.filter(
-        item => item.name.includes(keyword)
-      );
+      return this.items;
+    }
+  },
+  watch: {
+    // 監聽搜尋框輸入，做簡單 debounce 以減少請求
+    search(newVal) {
+      if (this._debounceTimer) clearTimeout(this._debounceTimer);
+      this._debounceTimer = setTimeout(() => {
+        const keyword = (newVal || "").trim();
+        if (!keyword) {
+          this.items = [];
+          return;
+        }
+        this.fetchFuzzyItems(keyword);
+      }, 150);
     }
   },
   methods: {
+    async fetchFuzzyItems(keyword) {
+      this.isLoading = true;
+
+      // 參考 UserHistoryView.vue 的 GET 寫法
+      const params = new URLSearchParams({
+        q: keyword
+      });
+
+      try {
+        const resp = await fetch(`/api/search/fuzzy-search?${params.toString()}`, {
+          method: "GET",
+          headers: { "Content-Type": "application/json" }
+        });
+
+        const data = await resp.json();
+
+        if (resp.ok && Array.isArray(data)) {
+          // API 回傳的是字串陣列 → 轉成 { id, name } 給前端用
+          this.items = data.map((name, idx) => ({ id: idx + 1, name }));
+        } else {
+          console.error("Failed to fetch fuzzy items:", data);
+          this.items = [];
+        }
+      } catch (err) {
+        console.error("Error fetching fuzzy items:", err);
+        this.items = [];
+      } finally {
+        this.isLoading = false;
+      }
+    },
+
     selectItem(item) {
       const type = this.$route.query.type
       let newQuery = {
@@ -262,4 +298,3 @@ onUnmounted(() => {
 });
 
 </script>
-

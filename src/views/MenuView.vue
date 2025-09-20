@@ -38,6 +38,9 @@ const menuMap = {
     { label: "Register", to: { name: "register" } },
     { label: "Login", to: { name: "login" } },
     { label: "Guide", to: { name: "guide" } },
+    { label: "Trade", to: { name: "trade" } },
+    { label: "History", to: { name: "user_history" } },
+    { label: "Select Item", to: { name: "select_item" } },
   ],
   login: [
     { label: "Login", to: { name: "login" } },
@@ -48,10 +51,14 @@ const menuMap = {
     { label: "Trade", to: { name: "trade" } },
     { label: "Guide", to: { name: "guide" } },
   ],
-  histroy: [
-    {label: "Global", to: {name: "<global_history"}},
-    {label: "User", to: {name: "<user_history"}}
+  user_history: [
+    {label: "Global", to: {name: "global_history"}},
+    {label: "User", to: {name: "user_history"}}
   ],
+  global_history: [
+    {label: "Global", to: {name: "global_history"}},
+    {label: "User", to: {name: "user_history"}}
+  ]
 };
 
 const menuItems = computed(() => menuMap[route.query.view] || []);

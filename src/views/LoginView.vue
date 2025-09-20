@@ -34,7 +34,7 @@
       </div>
     </div>
     
-    <BottomBar :showMenu="true" title="Login" />
+    <BottomBar :showMenu="true" title="Login" currentView="login"  />
   </div>
 </template>
 

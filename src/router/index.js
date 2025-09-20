@@ -37,6 +37,8 @@ const routes = [
     path: "/guide",
     name: "guide",
     component: GuideView,
+  },
+  {
     path: "/user_history",
     name: "user_history",
     component: UserHistoryView,

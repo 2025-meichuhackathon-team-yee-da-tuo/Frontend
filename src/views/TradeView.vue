@@ -56,7 +56,7 @@
       </div>
     </div>
     
-    <BottomBar :showMenu="true" title="Trade" @goBack="goBack" />
+    <BottomBar :showMenu="true" title="Trade" currentView="trade" />
   </div>
 </template>
 

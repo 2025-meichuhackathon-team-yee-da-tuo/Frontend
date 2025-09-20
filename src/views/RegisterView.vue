@@ -44,7 +44,7 @@
       </div>
     </div>
     
-    <BottomBar :showMenu="true" title="Register" />
+    <BottomBar :showMenu="true" title="Register" currentView="register"/>
   </div>
 </template>
 

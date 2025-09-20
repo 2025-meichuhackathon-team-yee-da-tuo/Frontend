@@ -23,10 +23,8 @@
     
     <BottomBar
       :showMenu="true"
-      :titleIcon="require('@/assets/Icons/user.svg')"
-      :titleIconAlt="'user icon'"
-      :titleIconClass="'user-icon'"
-      @goBack="goBack"
+      title="Dashboard"
+      currentView="dashboard"
     />
   </div>
 </template>

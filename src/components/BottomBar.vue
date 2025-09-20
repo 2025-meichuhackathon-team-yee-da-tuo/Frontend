@@ -2,7 +2,7 @@
   <div class="btm-bar">
     <router-link
       v-if="showMenu"
-      :to="{ name: 'menu', query: { view: 'register' } }"
+      :to="{ name: 'menu', query: { view: currentView } }"
       class="btm-bar-btn"
       aria-label="page selection"
     >
@@ -30,6 +30,10 @@ export default {
       default: true,
     },
     title: {
+      type: String,
+      default: "",
+    },
+    currentView: {
       type: String,
       default: "",
     },

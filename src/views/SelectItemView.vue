@@ -211,7 +211,7 @@ export default {
           return;
         }
         this.fetchFuzzyItems(keyword);
-      }, 50);
+      }, 1);
     }
   },
   methods: {

@@ -43,6 +43,7 @@ const menuMap = {
   login: [
     { label: "Login", to: { name: "login" } },
     { label: "Register", to: { name: "register" } },
+    { label: "Trade", to: { name: "trade" } },
   ],
   trade: [
     { label: "Trade", to: { name: "trade" } },

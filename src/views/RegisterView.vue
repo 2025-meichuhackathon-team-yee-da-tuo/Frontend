@@ -12,8 +12,10 @@
               v-model="form.email"
               type="email"
               placeholder="example@example.com"
+              :class="{ 'error': errors.email }"
               required
             />
+            <div v-if="errors.email" class="error-message">{{ errors.email }}</div>
           </div>
           <div class="auth-col">
             <span class="auth-ico">
@@ -23,8 +25,10 @@
               v-model="form.password"
               type="password"
               placeholder="Password"
+              :class="{ 'error': errors.password }"
               required
             />
+            <div v-if="errors.password" class="error-message">{{ errors.password }}</div>
           </div>
           <div class="auth-col">
             <span class="auth-ico">
@@ -34,11 +38,18 @@
               v-model="form.confirm"
               type="password"
               placeholder="Confirm Password"
+              :class="{ 'error': errors.confirm }"
               required
             />
+            <div v-if="errors.confirm" class="error-message">{{ errors.confirm }}</div>
           </div>
-          <button type="submit" class="auth-btn" aria-label="register button">
-            Next
+          <button 
+            type="submit" 
+            class="auth-btn" 
+            :disabled="isLoading"
+            aria-label="register button"
+          >
+            {{ isLoading ? 'Loading...' : 'Next' }}
           </button>
         </form>
       </div>
@@ -51,20 +62,85 @@
 <script setup>
 import BottomBar from "@/components/BottomBar.vue";
 import GuideButton from "@/components/GuideButton.vue";
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import { useRouter } from "vue-router";
+
 const router = useRouter();
 const form = ref({ email: "", password: "", confirm: "" });
+const isLoading = ref(false);
+const errors = ref({ email: '', password: '', confirm: '' });
 
-function onRegister() {
-  if (form.value.password !== form.value.confirm) {
-    alert("密碼不一致！");
-    return;
-  }
-  alert("送出:\n" + JSON.stringify(form.value, null, 2));
+// 清除錯誤訊息當使用者開始輸入
+watch(() => form.value.email, () => { errors.value.email = '' });
+watch(() => form.value.password, () => { errors.value.password = '' });
+watch(() => form.value.confirm, () => { errors.value.confirm = '' });
+
+function clearErrors() {
+  errors.value = { email: '', password: '', confirm: '' };
 }
-function goBack() {
-  router.back();
+
+async function onRegister() {
+  clearErrors();
+  isLoading.value = true;
+
+  try {
+    const response = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: form.value.email,
+        password: form.value.password,
+        confirmPassword: form.value.confirm
+      })
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      switch (data.status || data.code || 0) {
+        case 0:
+          router.push({ name: 'login' });
+          break;
+        case 1:
+          errors.value.email = 'The email is already registered!';
+          break;
+        case 2:
+          errors.value.password = 'The password must be at least 8 characters long!';
+          break;
+        case 3:
+          errors.value.confirm = 'The password and confirmation password do not match!';
+          break;
+        default:
+          router.push({ name: 'login' });
+      }
+    } else {
+      if (data.status !== undefined || data.code !== undefined) {
+        const statusCode = data.status || data.code;
+        switch (statusCode) {
+          case 1:
+            errors.value.email = 'The email is already registered!';
+            break;
+          case 2:
+            errors.value.password = 'The password must be at least 8 characters long!';
+            break;
+          case 3:
+            errors.value.confirm = 'The password and confirmation password do not match!';
+            break;
+          default:
+            errors.value.email = data.message || 'Registration failed, please try again later';
+        }
+      } else {
+        errors.value.email = data.message || 'Registration failed, please try again later';
+      }
+    }
+  } catch (error) {
+    errors.value.email = 'Network error, please try again later';
+    console.error('API request error:', error);
+  } finally {
+    isLoading.value = false;
+  }
 }
 </script>
 
@@ -112,6 +188,12 @@ function goBack() {
   gap: 0.8rem;
 }
 
+.auth-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
 .auth-ico {
   min-width: 1.5rem;
   text-align: left;
@@ -127,7 +209,7 @@ function goBack() {
   flex: 1;
   font-size: 1.4rem;
   border-radius: 0.7rem;
-  border: none;
+  border: 2px solid transparent;
   outline: none;
   padding: 0.45rem 0.7rem;
   color: #222;
@@ -137,6 +219,19 @@ function goBack() {
   &:focus {
     box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
   }
+  
+  &.error {
+    border-color: #ff4444;
+    box-shadow: 0 0 0 2px rgba(255, 68, 68, 0.3);
+  }
+}
+
+.error-message {
+  color: #ff4444;
+  font-size: 0.9rem;
+  margin-top: 0.2rem;
+  margin-left: 0.2rem;
+  min-height: 1.2rem;
 }
 
 .auth-btn {
@@ -153,10 +248,16 @@ function goBack() {
   font-weight: 600;
   transition: background-color 0.2s ease;
   
-  &:hover {
+  &:hover:not(:disabled) {
     background: #000;
   }
+  
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
 }
+
 @media (max-width: 300px) {
   .auth-box {
     max-width: 96vw;
@@ -182,10 +283,9 @@ function goBack() {
     padding: 0.5rem 1.5rem;
     font-size: 0.9rem;
   }
-
-  .auth-col {
-    display: flex;
-    flex-direction: column;
+  
+  .error-message {
+    font-size: 0.8rem;
   }
 }
 
@@ -220,10 +320,13 @@ function goBack() {
     margin-left: 0.5rem;
     margin-right: 0.5rem;
   }
+  
   .auth-col {
-    display: flex;
-    flex-direction: column;
     gap: 0.1rem;
+  }
+  
+  .error-message {
+    font-size: 0.7rem;
   }
 }
 </style>

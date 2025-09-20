@@ -7,6 +7,14 @@ module.exports = defineConfig({
       webSocketURL: 'auto://0.0.0.0:0/ws'
     },
     hot: true,
-    liveReload: true
-  },
+    liveReload: true,
+    proxy: {
+      '/api': {
+        target: 'http://203.116.30.132:8000',
+        changeOrigin: true,
+        secure: false
+      }
+    }
+    },
 });
+

@@ -1,6 +1,6 @@
 <template>
   <div class="trade-bg">
-    <GuideButton />
+    <GuideButton ref="guideBtn" />
     
     <div class="trade-content">
       <div class="item-section-own">
@@ -82,7 +82,7 @@
 <script setup>
 import BottomBar from "@/components/BottomBar.vue"
 import GuideButton from "@/components/GuideButton.vue"
-import { ref, computed, onMounted, onActivated, onUnmounted, watch } from "vue"
+import { ref, computed, onMounted, onActivated, onUnmounted, watch, nextTick } from "vue"
 import { useRoute, useRouter } from "vue-router"
 import { useUserStore } from "@/stores/user"
 
@@ -104,8 +104,9 @@ const errors = ref({
 })
 
 const submitBtn = ref(null)
+const guideBtn = ref(null)  // Ref for GuideButton
 
-// 認證檢查函數
+// Authentication check function
 function checkAuthStatus() {
   userStore.restoreUser()
   if (!userStore.isLoggedIn || !userStore.email) {
@@ -125,6 +126,13 @@ onMounted(() => {
       submitBtn.value.scrollIntoView({ behavior: 'smooth', block: 'center' });
     });
   }
+
+  // Auto focus on GuideButton after DOM render
+  nextTick(() => {
+    if (guideBtn.value && guideBtn.value.$el) {
+      guideBtn.value.$el.focus();
+    }
+  });
 })
 
 onActivated(() => {

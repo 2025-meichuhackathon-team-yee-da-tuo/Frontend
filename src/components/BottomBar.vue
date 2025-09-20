@@ -76,6 +76,12 @@ export default {
   min-height: 2.5rem;
   transition: background-color 0.2s ease;
   border-radius: 0.5rem;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+  border: none;
   
   &:hover {
     background: rgba(255, 255, 255, 0.1);

@@ -17,14 +17,23 @@
             <span v-if="ownedItemName">{{ ownedItemName }}</span>
             <span v-else>+</span>
           </button>
+          <!-- <input 
+            v-model="ownedItemName" 
+            class="input input-name"
+            :class="{ 'error': errors.item_a }"
+            placeholder="Enter item name"
+          /> -->
           <input
             v-model.number="ownedItemQty"
             :placeholder="ownedQtyHint"
             type="number"
             min="1"
             class="input input-qty"
+            :class="{ 'error': errors.quantity_a }"
           />
         </div>
+        <div v-if="errors.item_a" class="error-message">{{ errors.item_a }}</div>
+        <div v-if="errors.quantity_a" class="error-message">{{ errors.quantity_a }}</div>
       </div>
 
       <div class="arrow-row">
@@ -45,21 +54,36 @@
             <span v-if="desiredItemName">{{ desiredItemName }}</span>
             <span v-else>+</span>
           </button>
+          <!-- <input 
+            v-model="desiredItemName" 
+            class="input input-name"
+            :class="{ 'error': errors.item_b }"
+            placeholder="Enter item name"
+          /> -->
           <input
             v-model.number="desiredItemQty"
             :placeholder="desiredQtyHint"
             type="number"
             min="1"
             class="input input-qty"
+            :class="{ 'error': errors.quantity_b }"
           />
         </div>
+        <div v-if="errors.item_b" class="error-message">{{ errors.item_b }}</div>
+        <div v-if="errors.quantity_b" class="error-message">{{ errors.quantity_b }}</div>
       </div>
 
       <div class="button-section">
-        <button class="submit-btn" @click="submitTrade">
-          Add Trade
+        <button 
+          class="submit-btn" 
+          @click="submitTrade"
+          :disabled="isLoading"
+        >
+          {{ isLoading ? 'Loading...' : 'Add Trade' }}
         </button>
       </div>
+      
+      <div v-if="errors.general" class="general-error">{{ errors.general }}</div>
     </div>
     
     <BottomBar :showMenu="true" title="Trade" currentView="trade" />
@@ -71,13 +95,35 @@ import BottomBar from "@/components/BottomBar.vue"
 import GuideButton from "@/components/GuideButton.vue"
 import { ref, computed, onMounted, watch } from "vue"
 import { useRoute, useRouter } from "vue-router"
+import { useUserStore } from "@/stores/user"
 
 const router = useRouter()
+const userStore = useUserStore()
 
 const ownedItemName = ref("")
 const ownedItemQty = ref()
 const desiredItemName = ref("")
 const desiredItemQty = ref()
+const isLoading = ref(false)
+const errors = ref({
+  item_a: '',
+  quantity_a: '',
+  item_b: '',
+  quantity_b: '',
+  general: ''
+})
+
+onMounted(() => {
+  userStore.restoreUser()
+  if (!userStore.isLoggedIn) {
+    router.push({ name: 'login' })
+  }
+})
+
+watch(() => ownedItemName.value, () => { errors.value.item_a = '' })
+watch(() => ownedItemQty.value, () => { errors.value.quantity_a = '' })
+watch(() => desiredItemName.value, () => { errors.value.item_b = '' })
+watch(() => desiredItemQty.value, () => { errors.value.quantity_b = '' })
 
 const ownedQtyHint = computed(() => {
   if (!ownedItemQty.value) return "1"
@@ -91,46 +137,64 @@ const desiredQtyHint = computed(() => {
   return ""
 })
 
-function goBack() {
-  router.back()
-}
-
-function submitTrade() {
-  if (!ownedItemName.value || !desiredItemName.value || !ownedItemQty.value || !desiredItemQty.value) {
-    alert(
-      "Trade not submitted:\n" +
-      [
-        !ownedItemName.value ? "- Owned Item is missing." : "",
-        !ownedItemQty.value ? "- Owned Item quantity is missing or invalid." : "",
-        !desiredItemName.value ? "- Desired Item is missing." : "",
-        !desiredItemQty.value ? "- Desired Item quantity is missing or invalid." : "",
-        ""
-      ].filter(Boolean).join('\n') +
-      "\nPlease complete all fields and ensure quantities are greater than 0."
-    )
+async function submitTrade() {
+  if (!userStore.isLoggedIn || !userStore.email) {
+    router.push({ name: 'login' })
     return
   }
 
-  
-  if (ownedItemQty.value < 1 || desiredItemQty.value < 1) {
-    alert("Quantity must be greater than 0")
-    return
+  errors.value = {
+    item_a: '',
+    quantity_a: '',
+    item_b: '',
+    quantity_b: '',
+    general: ''
   }
+
   
-  const tradeData = {
-    owned: {
-      name: ownedItemName.value,
-      quantity: ownedItemQty.value
-    },
-    desired: {
-      name: desiredItemName.value,
-      quantity: desiredItemQty.value
+  if (!ownedItemName.value) errors.value.item_a = 'Please enter the name of the item you own'
+  if (!ownedItemQty.value) errors.value.quantity_a = 'Please enter the quantity you own'
+  if (!desiredItemName.value) errors.value.item_b = 'Please enter the name of the item you want'
+  if (!desiredItemQty.value) errors.value.quantity_b = 'Please enter the quantity you want'
+
+  if (ownedItemQty.value < 1) errors.value.quantity_a = 'Quantity must be greater than 0'
+  if (desiredItemQty.value < 1) errors.value.quantity_b = 'Quantity must be greater than 0'
+  
+  if (errors.value.item_a || errors.value.quantity_a || errors.value.item_b || errors.value.quantity_b) return
+
+  isLoading.value = true
+
+  const params = new URLSearchParams({
+    user_a: userStore.email,
+    item_a: ownedItemName.value,
+    quantity_a: parseInt(ownedItemQty.value).toString(),
+    item_b: desiredItemName.value,
+    quantity_b: parseInt(desiredItemQty.value).toString()
+  })
+
+  try {
+    const response = await fetch(`/api/trade/new_trade?${params.toString()}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    })
+
+    const data = await response.json()
+
+    if (response.ok) {
+      ownedItemName.value = ""
+      ownedItemQty.value = null
+      desiredItemName.value = ""
+      desiredItemQty.value = null
+      router.push({ name: 'menu', query: { view: 'history' } })
+    } else {
+      errors.value.general = 'Failed to create trade, please try again later'
     }
+  } catch (error) {
+    errors.value.general = 'Network error, please try again later'
+  } finally {
+    isLoading.value = false
   }
   
-  console.log("Trade data:", tradeData)
-  alert("Trade submitted:\n" + JSON.stringify(tradeData, null, 2))
-
   ownedItemName.value = ""
   ownedItemQty.value = null
   desiredItemName.value = ""
@@ -200,7 +264,7 @@ watch(() => route.query, syncFromQuery, { immediate: true, deep: true })
 }
 
 .input {
-  border: none;
+  border: 2px solid transparent;
   border-radius: 0.5rem;
   font-size: 1.2rem;
   padding: 0.6rem 0.8rem;
@@ -216,6 +280,11 @@ watch(() => route.query, syncFromQuery, { immediate: true, deep: true })
   
   &::placeholder {
     color: #999;
+  }
+  
+  &.error {
+    border-color: #ff4444;
+    box-shadow: 0 0 0 2px rgba(255, 68, 68, 0.3);
   }
 }
 
@@ -233,6 +302,25 @@ watch(() => route.query, syncFromQuery, { immediate: true, deep: true })
   &::placeholder {
     text-align: center;
   }
+}
+
+.error-message {
+  color: #ff4444;
+  font-size: 0.9rem;
+  margin-top: 0.3rem;
+  margin-left: 0.2rem;
+}
+
+.general-error {
+  color: #ff4444;
+  font-size: 0.9rem;
+  margin-top: 1rem;
+  text-align: center;
+  padding: 0.5rem;
+  background: rgba(255, 68, 68, 0.1);
+  border-radius: 0.5rem;
+  width: 100%;
+  max-width: 420px;
 }
 
 .arrow-row {
@@ -279,12 +367,17 @@ watch(() => route.query, syncFromQuery, { immediate: true, deep: true })
   font-weight: 600;
   transition: background-color 0.2s ease;
   
-  &:hover {
+  &:hover:not(:disabled) {
     background: #000;
   }
   
-  &:active {
+  &:active:not(:disabled) {
     transform: translateY(1px);
+  }
+  
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
   }
 }
 
@@ -321,6 +414,10 @@ watch(() => route.query, syncFromQuery, { immediate: true, deep: true })
   .submit-btn {
     font-size: 0.9rem;
     padding: 0.6rem 2rem;
+  }
+  
+  .error-message {
+    font-size: 0.8rem;
   }
 }
 
@@ -363,6 +460,10 @@ watch(() => route.query, syncFromQuery, { immediate: true, deep: true })
   .submit-btn {
     font-size: 0.6rem;
     padding: 0.4rem 1.33rem;
+  }
+  
+  .error-message {
+    font-size: 0.7rem;
   }
 }
 </style>

@@ -1,3 +1,4 @@
+// 
 <template>
   <div class="select-bg">
     <div class="search-bar">
@@ -5,8 +6,13 @@
       <input ref="searchInput" type="text" v-model="search" placeholder="search item..." />
     </div>
     <div class="records">
-      <div v-if="filteredItems.length >= 0" class="recent-label">Recent Record</div>
+      <div v-if="filteredItems.length >= 0" class="recent-label">
+        {{ (search || '').trim() ? 'Search Results' : 'Recent Items' }}
+      </div>
       <div v-if="isLoading" class="loading-message">Loading...</div>
+      <div v-else-if="filteredItems.length === 0 && !(search || '').trim()" class="no-items-message">
+        No recent items found
+      </div>
       <div v-else
         v-for="(item, idx) in filteredItems"
         :key="item.id"
@@ -108,6 +114,14 @@
   margin: 0.5rem 0 0.3rem 0.2rem;
   letter-spacing: 1px;
 }
+
+.loading-message, .no-items-message {
+  color: #888;
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 2rem 1rem;
+  font-style: italic;
+}
 .records {
   width: 90%;
   margin: 0px auto;
@@ -183,7 +197,10 @@
 import BottomBar from "@/components/BottomBar.vue";
 import { ref, onMounted, onUnmounted, nextTick } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { useUserStore } from "@/stores/user";
+
 const router = useRouter();
+const userStore = useUserStore();
 
 function goBack() {
   router.back();
@@ -198,14 +215,23 @@ export default {
       hoverItem: null,
       // 原本硬編的 items 移除，改成動態載入
       items: [],
+      recentItems: [], // 最近交易物品
       isLoading: false,
       _debounceTimer: null
     };
   },
   computed: {
-    // 後端已經幫你做語意過濾了，這裡直接回傳目前 items
+    // 根據搜尋狀態決定顯示的項目
     filteredItems() {
-      return this.items;
+      const searchTerm = (this.search || "").trim();
+      
+      // 如果有搜尋文字，顯示搜尋結果
+      if (searchTerm) {
+        return this.items;
+      }
+      
+      // 如果沒有搜尋文字，顯示最近交易物品
+      return this.recentItems;
     }
   },
   watch: {
@@ -230,6 +256,9 @@ export default {
       }
     });
     
+    // 載入最近交易物品
+    this.fetchRecentItems();
+    
     // Add keydown event listener
     document.addEventListener("keydown", this.handleKeyDown);
   },
@@ -238,6 +267,52 @@ export default {
     document.removeEventListener("keydown", this.handleKeyDown);
   },
   methods: {
+    // 獲取最近交易物品
+    async fetchRecentItems() {
+      try {
+        // 從 userStore 獲取用戶信息
+        userStore.restoreUser();
+        const userEmail = userStore.email;
+        
+        if (!userEmail) {
+          console.error("No user email found");
+          this.recentItems = [];
+          return;
+        }
+        
+        const params = new URLSearchParams({
+          user: userEmail,
+          limit: -1 // 獲取所有最近物品
+        });
+
+        const resp = await fetch(`/api/trade/recent-items?${params.toString()}`, {
+          method: "GET",
+          headers: { "Content-Type": "application/json" }
+        });
+        
+        if (resp.ok) {
+          const data = await resp.json();
+          console.log('Recent items API response:', data);
+          
+          // 根據實際 API 響應格式處理數據
+          if (data.recent_items && Array.isArray(data.recent_items)) {
+            this.recentItems = data.recent_items.map((itemObj, i) => ({ 
+              id: `recent_${i + 1}`, 
+              name: itemObj.item 
+            }));
+          } else {
+            this.recentItems = [];
+          }
+        } else {
+          console.error("Failed to fetch recent items:", resp.status);
+          this.recentItems = [];
+        }
+      } catch (err) {
+        console.error("Error fetching recent items:", err);
+        this.recentItems = [];
+      }
+    },
+
     async fetchFuzzyItems(keyword) {
       this.isLoading = true;
 
@@ -259,11 +334,11 @@ export default {
         const merged = hasExact ? data : [keyword, ...data];
 
         // 轉回你原本使用的 { id, name } 結構
-        this.items = merged.map((name, i) => ({ id: i + 1, name }));
+        this.items = merged.map((name, i) => ({ id: `search_${i + 1}`, name }));
       } catch (err) {
         console.error("Error fetching fuzzy items:", err);
         // 即使失敗，也把輸入字放第一個，維持體驗
-        this.items = keyword ? [{ id: 1, name: keyword }] : [];
+        this.items = keyword ? [{ id: 'search_1', name: keyword }] : [];
       } finally {
         this.isLoading = false;
       }

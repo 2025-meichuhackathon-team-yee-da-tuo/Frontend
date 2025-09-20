@@ -2,7 +2,7 @@
   <div class="btm-bar">
     <router-link
       v-if="showMenu"
-      :to="{ name: 'menu', query: { view: currentView } }"
+      :to="{ name: 'menu', query: { view: 'register' } }"
       class="btm-bar-btn"
       aria-label="page selection"
     >
@@ -36,7 +36,7 @@ export default {
     currentView: {
       type: String,
       default: "",
-    },
+    }
   },
   setup() {
     const router = useRouter();
@@ -103,11 +103,6 @@ export default {
     display: block;
     filter: brightness(0) invert(1);
   }
-}
-
-.btm-bar-btn:focus {
-  outline: none;
-  box-shadow: none; /* 預防部份瀏覽器用 box-shadow 當聚焦外框 */
 }
 
 .btm-bar-spacer {

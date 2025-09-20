@@ -24,10 +24,12 @@ import BottomBar from "@/components/BottomBar.vue";
 import { useRoute, useRouter } from "vue-router";
 import { computed, ref, onMounted, nextTick } from "vue";
 import { useUserStore } from "@/stores/user";
+import { useNavigationStore } from "@/stores/navigation";
 
 const router = useRouter();
 const route = useRoute();
 const userStore = useUserStore();
+const navigationStore = useNavigationStore();
 
 const activeMenu = ref("");
 
@@ -72,6 +74,11 @@ function handleMenuClick(item) {
     handleLogout();
   } else if(item.to){
     activeMenu.value = item.to.name || "";
+    
+    // 記錄導航歷史：從當前來源頁面通過menu導航到目標頁面
+    const fromPage = route.query.view || 'unknown';
+    navigationStore.recordNavigation(fromPage, item.to.name, true);
+    
     router.push(item.to);
   }
 }

@@ -1,13 +1,13 @@
 <template>
   <div class="btm-bar">
-    <router-link
+    <span
       v-if="showMenu"
       class="btm-bar-btn"
       aria-label="page selection"
-      tabindex="-1"
+      @click="goToMenu"
     >
       <img src="@/assets/Icons/hamburger-bar.svg" alt="page selection" />
-    </router-link>
+    </span>
     
     <div v-else class="btm-bar-spacer"></div>
 
@@ -20,8 +20,9 @@
 </template>
 
 <script>
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { onMounted, onUnmounted } from 'vue'
+import { useNavigationStore } from '@/stores/navigation'
 
 export default {
   props: {
@@ -40,22 +41,48 @@ export default {
   },
   setup(props) {
     const router = useRouter();
+    const route = useRoute();
+    const navigationStore = useNavigationStore();
     
     function goBack() {
+      const currentPage = route.name;
+      
+      // 檢查是否通過menu導航到當前頁面
+      if (navigationStore.isViaMenu(currentPage)) {
+        // 如果是通過menu導航的，直接回到來源頁面
+        const previousPage = navigationStore.getPreviousPage(currentPage);
+        if (previousPage && previousPage !== 'unknown') {
+          // 清除當前頁面的導航歷史
+          navigationStore.clearHistory(currentPage);
+          // 導航到來源頁面
+          router.push({ name: previousPage });
+          return;
+        }
+      }
+      
+      // 如果沒有記錄的導航歷史，使用默認的返回行為
       router.back();
     }
+    
+    function goToMenu() {
+      router.push({ name: 'menu', query: { view: props.currentView } })
+    }
+    
     function handleEsc(e) {
       if (e.key === 'Escape' && props.showMenu) {
-        router.push({ name: 'menu', query: { view: props.currentView } })
+        goToMenu()
       }
     }
+    
     onMounted(() => {
       document.addEventListener('keydown', handleEsc)
     })
+    
     onUnmounted(() => {
       document.removeEventListener('keydown', handleEsc)
     })
-    return { goBack }
+    
+    return { goBack, goToMenu }
   }
 };
 </script>

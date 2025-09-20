@@ -52,8 +52,11 @@ import BottomBar from "@/components/BottomBar.vue"
 import GuideButton from "@/components/GuideButton.vue"
 import { ref, watch } from "vue"
 import { useRouter } from "vue-router"
+import { useUserStore } from "@/stores/user"  
 
 const router = useRouter()
+const userStore = useUserStore()
+
 const login = ref({
   email: "",
   password: "",
@@ -90,13 +93,15 @@ async function onLogin() {
     if (response.ok) {
       switch (data.status || data.code || 0) {
         case 0:
-          router.push({ name: 'trade' })
+          router.push({ name: 'trade' });
+          userStore.login(login.value.email);
           break
         case 1:
           errors.value.email = 'Email or password is incorrect!';
           errors.value.password = 'Email or password is incorrect!';
           break
         default:
+          userStore.login(login.value.email)
           router.push({ name: 'trade' })
       }
     } else {

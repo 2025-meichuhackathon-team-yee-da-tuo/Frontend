@@ -6,7 +6,8 @@
     </div>
     <div class="records">
       <div v-if="filteredItems.length >= 0" class="recent-label">Recent Record</div>
-      <div
+      <div v-if="isLoading" class="loading-message">Loading...</div>
+      <div v-else
         v-for="(item, idx) in filteredItems"
         :key="item.id"
         class="record-row"

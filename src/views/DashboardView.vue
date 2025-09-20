@@ -1,210 +1,334 @@
 <template>
-  <div class="dashboard-bg">
-    <GuideButton />
-    
-    <div class="dashboard-content">
-      <div class="dashboard-header">
-        <span class="item-title">{{ itemName }}</span>
-        <div class="title-divider"></div>
-      </div>
-      
-      <div class="records">
-        <div
-          v-for="record in records"
-          :key="record.id"
-          class="record-row"
-        >
-          <span class="item-left">{{ record.leftName }} {{ record.leftCount }}</span>
-          <span class="exchange-arrow">⇄</span>
-          <span class="item-right">{{ record.rightName }} {{ record.rightCount }}</span>
-        </div>
+  <div class="select-bg">
+    <div class="search-bar">
+      <span class="search-icon"></span>
+      <input ref="searchInput" type="text" v-model="search" placeholder="search item..." />
+    </div>
+    <div class="records">
+      <div v-if="filteredItems.length >= 0" class="recent-label">Global Trend</div>
+      <div
+        v-for="(item, idx) in filteredItems"
+        :key="item.id"
+        class="record-row"
+        tabindex="0"
+        ref="rows"
+        @focus="scrollIntoView($event)"
+        @click="selectItem(item)"
+        @keydown="handleRowKeydown($event, idx)"
+        style="cursor:pointer;"
+      >
+        <span class="item-name">{{ item.name }}</span>
       </div>
     </div>
-    
-    <BottomBar
-      :showMenu="true"
-      title="Dashboard"
-      currentView="dashboard"
-    />
+    <BottomBar :showMenu="false" title="Select Item" currentView="select_item" />
   </div>
 </template>
 
-<script setup>
-import BottomBar from "@/components/BottomBar.vue"
-import GuideButton from "@/components/GuideButton.vue"
-import { ref, onMounted } from "vue"
-import { useRoute, useRouter } from "vue-router"
-
-const router = useRouter()
-const route = useRoute()
-
-const itemName = ref("")
-const records = ref([
-  { id: 1, leftName: "蘋果", leftCount: 2, rightName: "鳳梨", rightCount: 1 },
-  { id: 2, leftName: "蘋果", leftCount: 1, rightName: "芒果", rightCount: 1 },
-  { id: 3, leftName: "葡萄", leftCount: 3, rightName: "蘋果", rightCount: 3 },
-  { id: 4, leftName: "柚子", leftCount: 1, rightName: "蘋果", rightCount: 2 },
-])
-
-onMounted(() => {
-  itemName.value = route.params.item || "物品詳情"
-})
-
-function goBack() {
-  router.push({ name: "select_item" })
-}
-</script>
-
 <style lang="scss" scoped>
-.dashboard-bg {
-  width: 100vw;
+.fixed-lightbulb {
+  position: fixed;
+  top: 5vw;
+  left: 5vw;
+  font-size: 6vw;
+  pointer-events: none;
+}
+.select-bg {
+  width: 100%;
+  max-width: 100vw;
   min-height: 100vh;
-  background: #2d2d2d;
+  background: #222;
   color: #fff;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
   position: relative;
 }
-.dashboard-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 3rem 0.7rem 1.2rem 0.7rem;
+.search-bar {
+  width: 100%;
+  max-width: 100%;
   box-sizing: border-box;
-  overflow-y: auto;
-}
-
-.dashboard-header {
-  width: 90%;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  margin-bottom: 1.2rem;
+  border-radius: 12px;
+  padding: 1rem 1rem 0.8rem 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 101;
+  background: #222;
+  .search-icon {
+    flex: 0 0 auto;  
+    display: inline-block;
+    width: 13px;
+    height: 13px;
+    position: relative;
+    margin-right: 5px;
+    &::before {
+      content: '';
+      display: block;
+      width: 8px;
+      height: 8px;
+      border: 1px solid #fff;
+      border-radius: 50%;
+      position: absolute;
+      left: 1px;
+      top: 1px;
+      box-sizing: border-box;
+      background: transparent;
+    }
+    &::after {
+      content: '';
+      display: block;
+      width: 4px;
+      height: 1px;
+      border-radius: 2px;
+      background: #fff;
+      position: absolute;
+      bottom: 2.7px;
+      right: 2.7px;
+      transform: rotate(45deg);
+    }
+  }
+  input {
+    flex: 1 1 0;  
+    width: 100%;
+    min-width: 0;
+    background: #fff;
+    border: 0;
+    border-radius: 4px;
+    padding: 6px 10px;
+    font-size: 0.88rem;
+    outline: none;
+  }
 }
-
-.item-title {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #fff;
-  letter-spacing: 2px;
-  text-align: center;
-  width: 100%;
-  margin-bottom: 0.5rem;
+.recent-label {
+  color: #bbb;
+  font-size: 0.62rem;
+  font-weight: 400;
+  margin: 0.5rem 0 0.3rem 0.2rem;
+  letter-spacing: 1px;
 }
-
-.title-divider {
-  width: 100%;
-  height: 2px;
-  background: #fff;
-  opacity: 0.45;
-  margin-bottom: 0.2rem;
-  border-radius: 1.5px;
-}
-
 .records {
   width: 90%;
-  display: flex;
-  flex-direction: column;
-  gap: 14px; 
+  margin: 0px auto;
+  padding-bottom: 4rem;
 }
-
 .record-row {
   background: #fff;
-  border-radius: 11px;
+  color: #222;
+  border-radius: 8px;
+  flex: 1;
   display: flex;
   align-items: center;
-  padding: 12px 24px;
-  font-size: 1.35rem;
+  justify-content: center;
+  margin-bottom: 12px;
+  padding: 3px 12px;
+  font-size: 1rem;
   font-weight: 600;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  
-  .item-left, .item-right {
-    flex: 1;
-    color: #222;
-    text-align: center;
-  }
-  
-  .exchange-arrow {
-    flex: 0 0 50px;
-    font-size: 2.1rem;
-    -webkit-text-stroke: 1px #222; 
-    color: #222;
-    text-align: center;
-  }
 }
 
-@media (max-width: 300px) {
-  .dashboard-content {
-    padding: 2rem 0.4rem 0.8rem 0.4rem;
-  }
-  
-  .dashboard-header {
-    margin-bottom: 0.8rem;
-  }
-  
-  .item-title {
-    font-size: 1.4rem;
-    letter-spacing: 1px;
-  }
-  
-  .title-divider {
-    height: 1.5px;
-    margin-bottom: 0.15rem;
-  }
-  
-  .records {
-    gap: 9px;
-  }
-  
-  .record-row {
-    border-radius: 8px;
-    padding: 8px 12px;
-    font-size: 1rem;
-    
-    .exchange-arrow {
-      flex: 0 0 40px;
-      font-size: 1.6rem;
-      -webkit-text-stroke: 0.5px #222;
-    }
-  }
-}
 
 @media (max-width: 200px) {
-  .dashboard-content {
-    padding: 1.33rem 0.27rem 0.53rem 0.27rem;
+  .select-bg {
+    font-size: 0.49rem;
+    padding: 0vh 0vw 0vh 0vw;
   }
-  
-  .dashboard-header {
-    margin-bottom: 0.53rem;
-  }
-  
-  .item-title {
-    font-size: 0.93rem;
-    margin-bottom: 0.33rem;
-    letter-spacing: 0.67px;
-  }
-  
-  .title-divider {
-    height: 1px;
-    margin-bottom: 0.1rem;
-  }
-  
-  .records {
-    gap: 0.4rem;
-  }
-  
-  .record-row {
-    border-radius: 0.33rem;
-    padding: 0.33rem 0.5rem;
-    font-size: 0.67rem;
-    
-    .exchange-arrow {
-      flex: 0 0 2rem; 
-      font-size: 1.07rem; 
-      -webkit-text-stroke: 0.33px #222;
+  .search-bar {
+    padding: 0.5rem 0.7rem 0.5rem 0.7rem;
+    border-radius: 6px;
+    .search-icon {
+      width: 7px;
+      height: 7px;
+      &::before {
+        width: 6px;
+        height: 6px;
+        border: 1px solid #fff;
+        left: 0px;
+        top: 0px;
+      }
+      &::after {
+        width: 3.5px;
+        height: 1px;
+        bottom: 0.5px;
+        right: 0px;
+      }
+    }
+    input {
+      padding: 4px 6px;
+      border-radius: 4px;
+      font-size: 0.6rem;
     }
   }
+  .records {
+    width: 90%;
+  }
+  .record-row {
+    border-radius: 5px;
+    margin-bottom: 7px;
+    padding: 2px 3px;
+    font-size: 0.52rem;
+  }
 }
+
 </style>
+
+<script>
+import BottomBar from "@/components/BottomBar.vue";
+import { ref, onMounted, onUnmounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
+const router = useRouter();
+
+function goBack() {
+  router.back();
+}
+
+export default {
+  name: "SelectItemPage",
+  components: { BottomBar },
+  data() {
+    return {
+      search: "",
+      hoverItem: null,
+      // 原本硬編的 items 移除，改成動態載入
+      items: [],
+      isLoading: false,
+      _debounceTimer: null
+    };
+  },
+  computed: {
+    // 後端已經幫你做語意過濾了，這裡直接回傳目前 items
+    filteredItems() {
+      return this.items;
+    }
+  },
+  watch: {
+    // 監聽搜尋框輸入，做簡單 debounce 以減少請求
+    search(newVal) {
+      if (this._debounceTimer) clearTimeout(this._debounceTimer);
+      this._debounceTimer = setTimeout(() => {
+        const keyword = (newVal || "").trim();
+        if (!keyword) {
+          this.items = [];
+          return;
+        }
+        this.fetchFuzzyItems(keyword);
+      }, 150);
+    }
+  },
+  methods: {
+    async fetchFuzzyItems(keyword) {
+      this.isLoading = true;
+
+      // 參考 UserHistoryView.vue 的 GET 寫法
+      const params = new URLSearchParams({
+        q: keyword
+      });
+
+      try {
+        const resp = await fetch(`/api/search/fuzzy-search?${params.toString()}`, {
+          method: "GET",
+          headers: { "Content-Type": "application/json" }
+        });
+
+        const data = await resp.json();
+
+        if (resp.ok && Array.isArray(data)) {
+          // API 回傳的是字串陣列 → 轉成 { id, name } 給前端用
+          this.items = data.map((name, idx) => ({ id: idx + 1, name }));
+        } else {
+          console.error("Failed to fetch fuzzy items:", data);
+          this.items = [];
+        }
+      } catch (err) {
+        console.error("Error fetching fuzzy items:", err);
+        this.items = [];
+      } finally {
+        this.isLoading = false;
+      }
+    },
+
+    selectItem(item) {
+      const type = this.$route.query.type
+      let newQuery = {
+        ownedItem: this.$route.query.ownedItem || "",
+        desiredItem: this.$route.query.desiredItem || "",
+      }
+      if (type === 'owned') newQuery.ownedItem = item.name
+      if (type === 'desired') newQuery.desiredItem = item.name
+
+      this.$router.push({ name: 'trade', query: newQuery })
+    },
+    scrollIntoView(e) {
+      setTimeout(() => {
+        const element = e.target;
+        const elementRect = element.getBoundingClientRect();
+        const viewportHeight = window.innerHeight;
+        const searchBarHeight = 35; // 根據你的 BottomBar 高度調整
+        const bottomBarHeight = 80; // 根據你的 BottomBar 高度調整
+        // print elementRect.top
+        console.log('elementRect.top:', elementRect.top);
+        console.log('searchBarHeight:', searchBarHeight);
+        if (elementRect.bottom > viewportHeight - bottomBarHeight) {
+          element.scrollIntoView({ 
+            block: 'center', 
+            behavior: 'smooth' 
+          });
+        }
+        else if (elementRect.top < searchBarHeight) {
+          element.scrollIntoView({ 
+            block: 'center', 
+            behavior: 'smooth' 
+          });
+        }
+      }, 25);
+    },
+    handleRowKeydown(e, idx) {
+      const keys = [
+        "0","1","2","3","4","5","6","7","8","9","*","#",
+        ..."abcdefghijklmnopqrstuvwxyz",
+        ..."ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+      ];
+      if (keys.includes(e.key)) {
+        if (this.$refs.searchInput && this.$refs.searchInput.focus) {
+          if (document.activeElement == this.$refs.searchInput)
+            this.search += e.key;
+          this.$refs.searchInput.focus();
+          const inputEl = this.$refs.searchInput;
+          if (inputEl.setSelectionRange) {
+            inputEl.setSelectionRange(this.search.length, this.search.length);
+          }
+          e.preventDefault();
+        }
+      }
+      // this.items[2] = {id: 3, name: e.key} // debug only
+      if (e.key === "ArrowUp") {
+        e.preventDefault();
+        if (idx > 0) {
+          this.$refs.rows[idx - 1].focus();
+        } else {
+          // focus 回 search bar
+          if (this.$refs.searchInput && this.$refs.searchInput.focus) {
+            this.$refs.searchInput.focus();
+          }
+        }
+      }
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        if (idx < this.filteredItems.length - 1) {
+          this.$refs.rows[idx + 1].focus();
+        }
+      }
+    }
+  }
+};
+
+// 讓 searchInput 正確綁定到 input DOM
+const searchInput = ref(null);
+
+onMounted(() => {
+  document.addEventListener("keydown", handleKeyDown);
+});
+onUnmounted(() => {
+  document.removeEventListener("keydown", handleKeyDown);
+});
+
+</script>

@@ -58,6 +58,12 @@ const routes = [
     name: "dashboard",
     component: DashboardView,
   },
+  {
+    path: "/dashboard/:itemName",
+    name: "dashboard_item",
+    component: DashboardView,
+    props: true
+  },
 ];
 
 const router = createRouter({

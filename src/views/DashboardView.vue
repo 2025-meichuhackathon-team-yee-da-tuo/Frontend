@@ -124,6 +124,13 @@
   padding: 3px 12px;
   font-size: 1rem;
   font-weight: 600;
+  transition: all 0.2s ease;
+  
+  &:focus {
+    outline: 3px solid #FF9800 !important; /* 橘色邊框，寬度3px */
+    outline-offset: 2px; /* 邊框與元素的間距 */
+    box-shadow: 0 0 0 1px rgba(255, 152, 0, 0.3) !important; /* 統一陰影效果 */
+  }
 }
 
 
@@ -173,7 +180,7 @@
 
 <script>
 import BottomBar from "@/components/BottomBar.vue";
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, onMounted, onUnmounted, nextTick } from "vue";
 import { useRoute, useRouter } from "vue-router";
 const router = useRouter();
 
@@ -213,6 +220,21 @@ export default {
         this.fetchFuzzyItems(keyword);
       }, 150);
     }
+  },
+  mounted() {
+    // 頁面載入時自動 focus 到搜尋框
+    this.$nextTick(() => {
+      if (this.$refs.searchInput) {
+        this.$refs.searchInput.focus();
+      }
+    });
+    
+    // Add keydown event listener
+    document.addEventListener("keydown", this.handleKeyDown);
+  },
+  unmounted() {
+    // Remove keydown event listener
+    document.removeEventListener("keydown", this.handleKeyDown);
   },
   methods: {
     async fetchFuzzyItems(keyword) {

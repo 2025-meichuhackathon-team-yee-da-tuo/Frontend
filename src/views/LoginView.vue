@@ -1,6 +1,6 @@
 <template>
   <div class="login-bg">
-    <GuideButton />
+    <GuideButton ref="guideBtn" />
     <div class="login-content">
       <div class="login-form">
         <div class="form-group">
@@ -43,7 +43,7 @@
 <script setup>
 import BottomBar from "@/components/BottomBar.vue"
 import GuideButton from "@/components/GuideButton.vue"
-import { ref, watch, onMounted, onActivated } from "vue"
+import { ref, watch, onMounted, onActivated, nextTick } from "vue"
 import { useRouter } from "vue-router"
 import { useUserStore } from "@/stores/user"
 
@@ -58,6 +58,7 @@ const errors = ref({
   password: '',
   general: ''
 })
+const guideBtn = ref(null)
 
 function checkLoginStatus() {
   if (userStore.isLoggedIn && userStore.email) {
@@ -69,6 +70,13 @@ function checkLoginStatus() {
 
 onMounted(() => {
   checkLoginStatus()
+
+  // Auto focus on GuideButton after DOM render
+  nextTick(() => {
+    if (guideBtn.value && guideBtn.value.$el) {
+      guideBtn.value.$el.focus();
+    }
+  });
 })
 
 onActivated(() => {
@@ -202,8 +210,9 @@ async function submitLogin() {
   transition: all 0.2s ease;
   
   &:focus {
-    outline: none;
-    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
+    outline: 3px solid #FF9800 !important; /* 橘色邊框，寬度3px */
+    outline-offset: 2px; /* 邊框與元素的間距 */
+    box-shadow: 0 0 0 1px rgba(255, 152, 0, 0.3) !important; /* 統一陰影效果 */
   }
   
   &::placeholder {
@@ -235,12 +244,12 @@ async function submitLogin() {
   padding: 0.75rem;
   background: #19181a;
   color: #fff;
-  border: none;
+  border: 2px solid transparent;
   border-radius: 0.5rem;
   cursor: pointer;
   font-size: 1.1rem;
   font-weight: 600;
-  transition: background-color 0.2s ease;
+  transition: all 0.2s ease;
   
   &:hover:not(:disabled) {
     background: #000;

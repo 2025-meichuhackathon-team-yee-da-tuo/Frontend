@@ -1,6 +1,6 @@
 <template>
   <div class="auth-bg">
-    <GuideButton/>
+    <GuideButton ref="guideBtn"/>
     <div class="auth-content">
       <div class="auth-box">
         <form class="auth-form" @submit.prevent="onRegister">
@@ -62,17 +62,27 @@
 <script setup>
 import BottomBar from "@/components/BottomBar.vue";
 import GuideButton from "@/components/GuideButton.vue";
-import { ref, watch } from "vue";
+import { ref, watch, onMounted, nextTick } from "vue";
 import { useRouter } from "vue-router";
 
 const router = useRouter();
 const form = ref({ email: "", password: "", confirm: "" });
 const isLoading = ref(false);
 const errors = ref({ email: '', password: '', confirm: '' });
+const guideBtn = ref(null);  // Ref for GuideButton
 
 watch(() => form.value.email, () => { errors.value.email = '' });
 watch(() => form.value.password, () => { errors.value.password = '' });
 watch(() => form.value.confirm, () => { errors.value.confirm = '' });
+
+onMounted(() => {
+  // Auto focus on GuideButton after DOM render
+  nextTick(() => {
+    if (guideBtn.value && guideBtn.value.$el) {
+      guideBtn.value.$el.focus();
+    }
+  });
+});
 
 function clearErrors() {
   errors.value = { email: '', password: '', confirm: '' };
@@ -216,7 +226,9 @@ async function onRegister() {
   transition: all 0.2s ease;
   
   &:focus {
-    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
+    outline: 3px solid #FF9800 !important; /* 橘色邊框，寬度3px */
+    outline-offset: 2px; /* 邊框與元素的間距 */
+    box-shadow: 0 0 0 1px rgba(255, 152, 0, 0.3) !important; /* 統一陰影效果 */
   }
   
   &.error {
@@ -240,12 +252,12 @@ async function onRegister() {
   margin-right: 2rem;
   background: #19181a;
   color: #fff;
-  border: none;
+  border: 2px solid transparent;
   border-radius: 0.7rem;
   cursor: pointer;
   font-size: 1rem;
   font-weight: 600;
-  transition: background-color 0.2s ease;
+  transition: all 0.2s ease;
   
   &:hover:not(:disabled) {
     background: #000;

@@ -1,6 +1,6 @@
 <template>
   <div class="history-bg">
-    <GuideButton />
+    <GuideButton ref="guideBtn" />
     
     <div class="history-content">
       <div class="search-bar">
@@ -28,7 +28,7 @@
 <script setup>
 import BottomBar from "@/components/BottomBar.vue"
 import GuideButton from "@/components/GuideButton.vue"
-import { ref, computed, onMounted } from "vue"
+import { ref, computed, onMounted, nextTick } from "vue"
 import { useRouter } from "vue-router"
 import { useUserStore } from "@/stores/user"
 
@@ -37,6 +37,7 @@ const userStore = useUserStore()
 const search = ref("")
 const records = ref([])
 const isLoading = ref(false)
+const guideBtn = ref(null)
 
 onMounted(() => {
   userStore.restoreUser()
@@ -45,6 +46,13 @@ onMounted(() => {
     return
   }
   fetchMostFreqPair()
+
+  // Auto focus on GuideButton after DOM render
+  nextTick(() => {
+    if (guideBtn.value && guideBtn.value.$el) {
+      guideBtn.value.$el.focus();
+    }
+  });
 })
 
 const filteredRecords = computed(() => {

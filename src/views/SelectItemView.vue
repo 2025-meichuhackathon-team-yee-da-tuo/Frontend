@@ -125,6 +125,13 @@
   padding: 3px 12px;
   font-size: 1rem;
   font-weight: 600;
+  transition: all 0.2s ease;
+  
+  &:focus {
+    outline: 3px solid #FF9800 !important; /* 橘色邊框，寬度3px */
+    outline-offset: 2px; /* 邊框與元素的間距 */
+    box-shadow: 0 0 0 1px rgba(255, 152, 0, 0.3) !important; /* 統一陰影效果 */
+  }
 }
 
 
@@ -172,164 +179,185 @@
 
 </style>
 
-<script setup>
-import { ref, computed, watch, onMounted, onUnmounted, nextTick } from "vue";
-import { useRoute, useRouter } from "vue-router";
+<script>
 import BottomBar from "@/components/BottomBar.vue";
-
-const route = useRoute();
+import { ref, onMounted, onUnmounted, nextTick } from "vue";
+import { useRoute, useRouter } from "vue-router";
 const router = useRouter();
-
-// state
-const search = ref("");
-const items = ref([]);
-const isLoading = ref(false);
-const hoverItem = ref(null);
-
-// refs
-const searchInput = ref(null);
-const rows = ref([]);
-
-// computed
-const filteredItems = computed(() => items.value);
-
-// debounce
-let _debounceTimer = null;
-
-// methods
-async function fetchFuzzyItems(keyword) {
-  isLoading.value = true;
-  const params = new URLSearchParams({ q: keyword });
-  try {
-    const resp = await fetch(`/api/search/fuzzy-search?${params.toString()}`, {
-      method: "GET",
-      headers: { "Content-Type": "application/json" }
-    });
-    const data = await resp.json();
-    const norm = (s) => (s ?? "").trim().toLowerCase();
-    const hasExact = data.some((name) => norm(name) === norm(keyword));
-    const merged = hasExact ? data : [keyword, ...data];
-    items.value = merged.map((name, i) => ({ id: i + 1, name }));
-  } catch (err) {
-    console.error("Error fetching fuzzy items:", err);
-    items.value = keyword ? [{ id: 1, name: keyword }] : [];
-  } finally {
-    isLoading.value = false;
-  }
-}
-
-function selectItem(item) {
-  const type = route.query.type;
-  const newQuery = {
-    ownedItem: route.query.ownedItem || "",
-    desiredItem: route.query.desiredItem || "",
-  };
-  if (type === "owned") newQuery.ownedItem = item.name;
-  if (type === "desired") newQuery.desiredItem = item.name;
-  router.push({ name: "trade", query: newQuery });
-}
-
-function scrollIntoView(e) {
-  // keep same behavior as Options API version
-  setTimeout(() => {
-    const element = e.target;
-    const elementRect = element.getBoundingClientRect();
-    const viewportHeight = window.innerHeight;
-    const searchBarHeight = 35;
-    const bottomBarHeight = 80;
-    if (elementRect.bottom > viewportHeight - bottomBarHeight) {
-      element.scrollIntoView({ block: "center", behavior: "smooth" });
-    } else if (elementRect.top < searchBarHeight) {
-      element.scrollIntoView({ block: "center", behavior: "smooth" });
-    }
-  }, 0);
-}
-
-function handleRowKeydown(e, idx) {
-  if (e.key === "Enter") {
-    e.preventDefault();
-    const item = filteredItems.value[idx];
-    if (item) selectItem(item);
-    return;
-  }
-  // typing letters/numbers should go to search input
-  if (
-    e.key.length === 1 &&
-    !e.ctrlKey && !e.metaKey && !e.altKey
-  ) {
-    search.value += e.key;
-    if (searchInput.value && searchInput.value.focus) {
-      searchInput.value.focus();
-      if (searchInput.value.setSelectionRange) {
-        const len = String(search.value).length;
-        searchInput.value.setSelectionRange(len, len);
-      }
-    }
-    e.preventDefault();
-    return;
-  }
-  if (e.key === "ArrowUp") {
-    e.preventDefault();
-    if (idx > 0 && rows.value?.[idx - 1]) {
-      rows.value[idx - 1].focus();
-    } else if (searchInput.value && searchInput.value.focus) {
-      searchInput.value.focus();
-    }
-    return;
-  }
-  if (e.key === "ArrowDown") {
-    e.preventDefault();
-    if (idx < filteredItems.value.length - 1 && rows.value?.[idx + 1]) {
-      rows.value[idx + 1].focus();
-    }
-    return;
-  }
-}
-
-// global keydown to route typing to search when not focused
-function handleKeyDown(e) {
-  const isInputFocused = document.activeElement === searchInput.value;
-  if (
-    !isInputFocused &&
-    e.key.length === 1 &&
-    !e.ctrlKey && !e.metaKey && !e.altKey
-  ) {
-    search.value += e.key;
-    if (searchInput.value && searchInput.value.focus) {
-      searchInput.value.focus();
-      nextTick(() => {
-        if (searchInput.value?.setSelectionRange) {
-          const len = String(search.value).length;
-          searchInput.value.setSelectionRange(len, len);
-        }
-      });
-    }
-    e.preventDefault();
-  }
-}
 
 function goBack() {
   router.back();
 }
 
-// watchers
-watch(search, (newVal) => {
-  if (_debounceTimer) clearTimeout(_debounceTimer);
-  _debounceTimer = setTimeout(() => {
-    const keyword = (newVal || "").trim();
-    if (!keyword) {
-      items.value = [];
-      return;
+export default {
+  name: "SelectItemPage",
+  components: { BottomBar },
+  data() {
+    return {
+      search: "",
+      hoverItem: null,
+      // 原本硬編的 items 移除，改成動態載入
+      items: [],
+      isLoading: false,
+      _debounceTimer: null
+    };
+  },
+  computed: {
+    // 後端已經幫你做語意過濾了，這裡直接回傳目前 items
+    filteredItems() {
+      return this.items;
     }
-    fetchFuzzyItems(keyword);
-  }, 1);
-});
+  },
+  watch: {
+    // 監聽搜尋框輸入，做簡單 debounce 以減少請求
+    search(newVal) {
+      if (this._debounceTimer) clearTimeout(this._debounceTimer);
+      this._debounceTimer = setTimeout(() => {
+        const keyword = (newVal || "").trim();
+        if (!keyword) {
+          this.items = [];
+          return;
+        }
+        this.fetchFuzzyItems(keyword);
+      }, 1);
+    }
+  },
+  mounted() {
+    // 頁面載入時自動 focus 到搜尋框
+    this.$nextTick(() => {
+      if (this.$refs.searchInput) {
+        this.$refs.searchInput.focus();
+      }
+    });
+    
+    // Add keydown event listener
+    document.addEventListener("keydown", this.handleKeyDown);
+  },
+  unmounted() {
+    // Remove keydown event listener
+    document.removeEventListener("keydown", this.handleKeyDown);
+  },
+  methods: {
+    async fetchFuzzyItems(keyword) {
+      this.isLoading = true;
 
-// lifecycle
+      // 參考 UserHistoryView.vue 的 GET 寫法
+      const params = new URLSearchParams({
+        q: keyword
+      });
+
+      try {
+        const resp = await fetch(`/api/search/fuzzy-search?${params.toString()}`, {
+          method: "GET",
+          headers: { "Content-Type": "application/json" }
+        });
+        const data = await resp.json();
+        const norm = s => (s ?? "").trim().toLowerCase();
+        const hasExact = data.some(name => norm(name) === norm(keyword));
+
+        // 合併：若沒有精確匹配，將 keyword 放最前；並做去重（以正規化後的字串為 key）
+        const merged = hasExact ? data : [keyword, ...data];
+
+        // 轉回你原本使用的 { id, name } 結構
+        this.items = merged.map((name, i) => ({ id: i + 1, name }));
+      } catch (err) {
+        console.error("Error fetching fuzzy items:", err);
+        // 即使失敗，也把輸入字放第一個，維持體驗
+        this.items = keyword ? [{ id: 1, name: keyword }] : [];
+      } finally {
+        this.isLoading = false;
+      }
+    },
+
+    selectItem(item) {
+      const type = this.$route.query.type
+      let newQuery = {
+        ownedItem: this.$route.query.ownedItem || "",
+        desiredItem: this.$route.query.desiredItem || "",
+      }
+      if (type === 'owned') newQuery.ownedItem = item.name
+      if (type === 'desired') newQuery.desiredItem = item.name
+
+      this.$router.push({ name: 'trade', query: newQuery })
+    },
+    scrollIntoView(e) {
+      setTimeout(() => {
+        const element = e.target;
+        const elementRect = element.getBoundingClientRect();
+        const viewportHeight = window.innerHeight;
+        const searchBarHeight = 35; // 根據你的 BottomBar 高度調整
+        const bottomBarHeight = 80; // 根據你的 BottomBar 高度調整
+        // print elementRect.top
+        console.log('elementRect.top:', elementRect.top);
+        console.log('searchBarHeight:', searchBarHeight);
+        if (elementRect.bottom > viewportHeight - bottomBarHeight) {
+          element.scrollIntoView({ 
+            block: 'center', 
+            behavior: 'smooth' 
+          });
+        }
+        else if (elementRect.top < searchBarHeight) {
+          element.scrollIntoView({ 
+            block: 'center', 
+            behavior: 'smooth' 
+          });
+        }
+      }, 25);
+    },
+    handleRowKeydown(e, idx) {
+      const keys = [
+        "0","1","2","3","4","5","6","7","8","9","*","#",
+        ..."abcdefghijklmnopqrstuvwxyz",
+        ..."ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+      ];
+      if (keys.includes(e.key)) {
+        if (this.$refs.searchInput && this.$refs.searchInput.focus) {
+          if (document.activeElement == this.$refs.searchInput)
+            this.search += e.key;
+          this.$refs.searchInput.focus();
+          const inputEl = this.$refs.searchInput;
+          if (inputEl.setSelectionRange) {
+            inputEl.setSelectionRange(this.search.length, this.search.length);
+          }
+          e.preventDefault();
+        }
+      }
+      // this.items[2] = {id: 3, name: e.key} // debug only
+      if (e.key === "ArrowUp") {
+        e.preventDefault();
+        if (idx > 0) {
+          this.$refs.rows[idx - 1].focus();
+        } else {
+          // focus 回 search bar
+          if (this.$refs.searchInput && this.$refs.searchInput.focus) {
+            this.$refs.searchInput.focus();
+          }
+        }
+      }
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        if (idx < this.filteredItems.length - 1) {
+          this.$refs.rows[idx + 1].focus();
+        }
+      }
+    },
+  }
+};
+
+// 讓 searchInput 正確綁定到 input DOM
+const searchInput = ref(null);
+
 onMounted(() => {
+  // 頁面載入時自動 focus 到 search bar，需等 DOM 完成
+  nextTick(() => {
+    if (searchInput.value && searchInput.value.focus) {
+      searchInput.value.focus();
+    }
+  });
   document.addEventListener("keydown", handleKeyDown);
 });
 onUnmounted(() => {
   document.removeEventListener("keydown", handleKeyDown);
 });
+
 </script>

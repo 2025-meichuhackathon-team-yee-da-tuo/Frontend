@@ -124,6 +124,13 @@
   padding: 3px 12px;
   font-size: 1rem;
   font-weight: 600;
+  transition: all 0.2s ease;
+  
+  &:focus {
+    outline: 3px solid #FF9800 !important; /* 橘色邊框，寬度3px */
+    outline-offset: 2px; /* 邊框與元素的間距 */
+    box-shadow: 0 0 0 1px rgba(255, 152, 0, 0.3) !important; /* 統一陰影效果 */
+  }
 }
 
 

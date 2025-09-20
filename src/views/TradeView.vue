@@ -306,8 +306,9 @@ watch(() => route.query, syncFromQuery, { immediate: true, deep: true })
   transition: all 0.2s ease;
   
   &:focus {
-    outline: none;
-    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
+    outline: 3px solid #FF9800 !important; /* 橘色邊框，寬度3px */
+    outline-offset: 2px; /* 邊框與元素的間距 */
+    box-shadow: 0 0 0 1px rgba(255, 152, 0, 0.3) !important; /* 統一陰影效果 */
   }
   
   &::placeholder {
@@ -317,6 +318,12 @@ watch(() => route.query, syncFromQuery, { immediate: true, deep: true })
   &.error {
     border-color: #ff4444;
     box-shadow: 0 0 0 2px rgba(255, 68, 68, 0.3);
+  }
+  
+  &.error:focus {
+    outline: 3px solid #FF9800 !important; /* 錯誤狀態的橘色邊框 */
+    outline-offset: 2px;
+    box-shadow: 0 0 0 1px rgba(255, 152, 0, 0.3) !important;
   }
 }
 
@@ -396,12 +403,18 @@ watch(() => route.query, syncFromQuery, { immediate: true, deep: true })
   padding: 0.75rem 3rem;
   background: #19181a;
   color: #fff;
-  border: none;
+  border: 2px solid transparent;
   border-radius: 0.7rem;
   cursor: pointer;
   font-size: 1.1rem;
   font-weight: 600;
-  transition: background-color 0.2s ease;
+  transition: all 0.2s ease;
+  
+  &:focus {
+    outline: 3px solid #FF9800 !important; /* 橘色邊框，寬度3px */
+    outline-offset: 2px; /* 邊框與元素的間距 */
+    box-shadow: 0 0 0 1px rgba(255, 152, 0, 0.3) !important; /* 統一陰影效果 */
+  }
   
   &:hover:not(:disabled) {
     background: #000;
@@ -415,13 +428,30 @@ watch(() => route.query, syncFromQuery, { immediate: true, deep: true })
     opacity: 0.6;
     cursor: not-allowed;
   }
+  
+  &:disabled:focus {
+    outline: 3px solid #666 !important; /* 禁用狀態的灰色邊框 */
+    outline-offset: 2px;
+    box-shadow: 0 0 0 1px rgba(102, 102, 102, 0.3) !important;
+    background: #19181a; /* 保持原背景色 */
+  }
 }
 
 .item-btn {
   cursor: pointer;
   
+  &:focus {
+    outline: 3px solid #FF9800 !important; /* 橘色邊框，寬度3px */
+    outline-offset: 2px; /* 邊框與元素的間距 */
+    box-shadow: 0 0 0 1px rgba(255, 152, 0, 0.3) !important; /* 統一陰影效果 */
+  }
+  
   &:hover {
     background: #f0f0f0;
+  }
+  
+  &:hover:focus {
+    background: #f0f0f0; /* hover + focus 時保持hover的背景色 */
   }
 }
 

@@ -1,0 +1,163 @@
+/* Focus樣式全局CSS文件 */
+
+/* 基礎Focus樣式 */
+.focus-primary {
+  transition: all 0.2s ease;
+}
+
+.focus-primary:focus {
+  outline: 3px solid #FF9800 !important;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 1px rgba(255, 152, 0, 0.3) !important;
+}
+
+/* 按鈕Focus樣式 */
+.focus-button {
+  transition: all 0.2s ease;
+}
+
+.focus-button:focus {
+  outline: 3px solid #FF9800 !important;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 1px rgba(255, 152, 0, 0.3) !important;
+}
+
+/* 輸入框Focus樣式 */
+.focus-input {
+  transition: all 0.2s ease;
+}
+
+.focus-input:focus {
+  outline: 3px solid #FF9800 !important;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 1px rgba(255, 152, 0, 0.3) !important;
+}
+
+/* 鏈接Focus樣式 */
+.focus-link {
+  transition: all 0.2s ease;
+}
+
+.focus-link:focus {
+  outline: 3px solid #FF9800 !important;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 1px rgba(255, 152, 0, 0.3) !important;
+}
+
+/* 發光效果Focus樣式 */
+.focus-glow {
+  transition: all 0.2s ease;
+}
+
+.focus-glow:focus {
+  outline: 3px solid #FF9800 !important;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 1px rgba(255, 152, 0, 0.3) !important;
+}
+
+/* 錯誤狀態Focus樣式 */
+.focus-error {
+  transition: all 0.2s ease;
+}
+
+.focus-error:focus {
+  outline: 3px solid #FF9800 !important;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 1px rgba(255, 152, 0, 0.3) !important;
+}
+
+/* 成功狀態Focus樣式 */
+.focus-success {
+  transition: all 0.2s ease;
+}
+
+.focus-success:focus {
+  outline: 3px solid #FF9800 !important;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 1px rgba(255, 152, 0, 0.3) !important;
+}
+
+/* 警告狀態Focus樣式 */
+.focus-warning {
+  transition: all 0.2s ease;
+}
+
+.focus-warning:focus {
+  outline: 3px solid #FF9800 !important;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 1px rgba(255, 152, 0, 0.3) !important;
+}
+
+/* 禁用Focus樣式 */
+.focus-disabled:focus {
+  outline: 3px solid #666 !important;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 1px rgba(102, 102, 102, 0.3) !important;
+}
+
+/* 無Focus樣式 */
+.focus-none:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* 自定義顏色Focus樣式 - 可以通過CSS變量來控制 */
+.focus-custom {
+  transition: all 0.2s ease;
+  --focus-color: #FF9800;
+  --focus-width: 3px;
+  --focus-offset: 2px;
+  --focus-shadow-opacity: 0.3;
+}
+
+.focus-custom:focus {
+  outline: var(--focus-width) solid var(--focus-color) !important;
+  outline-offset: var(--focus-offset);
+  box-shadow: 0 0 0 1px rgba(from var(--focus-color) r g b / var(--focus-shadow-opacity)) !important;
+}
+
+/* 響應式Focus樣式 */
+@media (max-width: 768px) {
+  .focus-primary:focus,
+  .focus-button:focus,
+  .focus-input:focus,
+  .focus-link:focus,
+  .focus-glow:focus,
+  .focus-error:focus,
+  .focus-success:focus,
+  .focus-warning:focus {
+    outline-width: 2px !important;
+    outline-offset: 1px;
+  }
+}
+
+/* 高對比度模式支持 */
+@media (prefers-contrast: high) {
+  .focus-primary:focus,
+  .focus-button:focus,
+  .focus-input:focus,
+  .focus-link:focus,
+  .focus-glow:focus,
+  .focus-error:focus,
+  .focus-success:focus,
+  .focus-warning:focus {
+    outline-width: 4px !important;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 1px currentColor !important;
+  }
+}
+
+/* 減少動畫模式支持 */
+@media (prefers-reduced-motion: reduce) {
+  .focus-primary,
+  .focus-button,
+  .focus-input,
+  .focus-link,
+  .focus-glow,
+  .focus-error,
+  .focus-success,
+  .focus-warning,
+  .focus-custom {
+    transition: none;
+  }
+}

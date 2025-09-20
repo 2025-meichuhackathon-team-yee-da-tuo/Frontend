@@ -143,15 +143,25 @@ async function handleLogout() {
   background: #19191b;
   font-size: 1.25rem;
   color: #fff;
-  border: none;
+  border: 2px solid transparent;
   text-align: center;
   cursor: pointer;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
   text-decoration: none;
-  transition: background-color 0.2s ease;
+  transition: all 0.2s ease;
+  
+  &:focus {
+    outline: 3px solid #FF9800 !important; /* 橙色邊框，與圖片中的效果一致 */
+    outline-offset: 2px; /* 邊框與按鈕的間距 */
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 152, 0, 0.3) !important; /* 保持原有陰影並添加focus效果 */
+  }
   
   &:hover {
     background: #2a2a2d;
+  }
+  
+  &:hover:focus {
+    background: #2a2a2d; /* hover + focus 時保持hover的背景色 */
   }
 }
 
@@ -159,6 +169,12 @@ async function handleLogout() {
 .menu-btn:active {
   background: #333;
   color: #fff;
+}
+
+.menu-list-item.active .menu-btn:focus {
+  outline: 3px solid #FF9800 !important; /* 保持一致的橙色focus樣式 */
+  outline-offset: 2px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 152, 0, 0.3) !important;
 }
 
 .menu-close-btn {
@@ -169,12 +185,23 @@ async function handleLogout() {
   padding: 0.4rem 0;
   background: #39394a;
   color: #fff;
-  border: none;
+  border: 2px solid transparent;
   cursor: pointer;
   opacity: 0.82;
-  transition: opacity 0.2s;
+  transition: all 0.2s ease;
+  
+  &:focus {
+    outline: 3px solid #FF9800 !important; /* 與其他按鈕保持一致的focus樣式 */
+    outline-offset: 2px;
+    box-shadow: 0 0 0 1px rgba(255, 152, 0, 0.3) !important;
+    opacity: 1;
+  }
   
   &:hover {
+    opacity: 1;
+  }
+  
+  &:hover:focus {
     opacity: 1;
   }
 }
@@ -193,6 +220,11 @@ async function handleLogout() {
     font-size: 1rem;
     padding: 0.5rem;
   }
+  
+  .menu-btn:focus {
+    outline-width: 2px !important; /* 小屏幕上使用較細的邊框 */
+    outline-offset: 1px;
+  }
 }
 
 @media (max-width: 200px) {
@@ -206,6 +238,11 @@ async function handleLogout() {
   
   .menu-btn {
     font-size: 1rem;
+  }
+  
+  .menu-btn:focus {
+    outline-width: 2px !important; /* 超小屏幕上也使用較細的邊框 */
+    outline-offset: 1px;
   }
 }
 </style>

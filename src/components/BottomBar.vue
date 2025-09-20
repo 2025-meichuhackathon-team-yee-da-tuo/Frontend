@@ -21,6 +21,7 @@
 
 <script>
 import { useRouter } from 'vue-router';
+import { onMounted, onUnmounted } from 'vue'
 
 export default {
   props: {
@@ -39,10 +40,21 @@ export default {
     function goBack() {
       router.back();
     }
-    
-    return {
-      goBack
-    };
+    function goHamburger() {
+      router.push({ name: 'menu', query: { view: 'register' } })
+    }
+    function handleEsc(e) {
+      if (e.key === 'Escape') {
+        goHamburger()
+      }
+    }
+    onMounted(() => {
+      document.addEventListener('keydown', handleEsc)
+    })
+    onUnmounted(() => {
+      document.removeEventListener('keydown', handleEsc)
+    })
+    return { goBack }
   }
 };
 </script>

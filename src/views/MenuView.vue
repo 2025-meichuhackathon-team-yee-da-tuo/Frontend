@@ -49,7 +49,6 @@ const menuMap = {
     { label: "Trade", to: { name: "trade" } },
     { label: "History", to: { name: "user_history" } },
     { label: "Dashboard", to: { name: "dashboard" } },
-    { label: "Menu", to: { name: "menu", query: { view: "trade" } } },
     { label: "Logout", action: "logout" },
   ],
   user_history: [

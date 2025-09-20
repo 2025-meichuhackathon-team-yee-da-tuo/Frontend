@@ -45,7 +45,7 @@ export default {
       router.back();
     }
     function handleEsc(e) {
-      if (e.key === 'Escape') {
+      if (e.key === 'Escape' && props.showMenu) {
         router.push({ name: 'menu', query: { view: props.currentView } })
       }
     }

@@ -4,6 +4,8 @@ import RegisterView from "@/views/RegisterView.vue";
 import MenuView from "@/views/MenuView.vue";
 import TradeView from "@/views/TradeView.vue";
 import GuideView from "@/views/GuideView.vue";
+import UserHistoryView from "@/views/UserHistoryView.vue";
+import GlobalHistoryView from "@/views/GlobalHistoryView.vue";
 const routes = [
   {
     path: "/",
@@ -33,6 +35,14 @@ const routes = [
     path: "/guide",
     name: "guide",
     component: GuideView,
+    path: "/user_history",
+    name: "user_history",
+    component: UserHistoryView,
+  },
+  {
+    path: "/global_history",
+    name: "global_history",
+    component: GlobalHistoryView,
   },
 ];
 

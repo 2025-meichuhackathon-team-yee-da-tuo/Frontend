@@ -190,4 +190,30 @@ export default {
     font-size: 0.66rem;
   }
 }
+.icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto;
+}
+.user-icon {
+  transform: translate(4px); 
+}
+.globe-icon {
+  margin: 0 auto;
+}
+.icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto;
+}
+.user-icon {
+  transform: translate(4px); 
+}
+.globe-icon {
+  margin: 0 auto;
+}
 </style>

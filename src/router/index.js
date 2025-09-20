@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 import LoginView from "../views/LoginView.vue";
 import RegisterView from "@/views/RegisterView.vue";
-import MenuView from "@/views/MenuView.vue";
+import MenuView from "@/components/MenuView.vue";
 import TradeView from "@/views/TradeView.vue";
 import UserHistoryView from "@/views/UserHistoryView.vue";
 import GlobalHistoryView from "@/views/GlobalHistoryView.vue";
@@ -57,12 +57,6 @@ const routes = [
     path: "/dashboard",
     name: "dashboard",
     component: DashboardView,
-  },
-  {
-    path: "/dashboard/:itemName",
-    name: "dashboard_item",
-    component: DashboardView,
-    props: true
   },
 ];
 

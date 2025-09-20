@@ -18,10 +18,8 @@
     
     <BottomBar 
       :showMenu="true" 
-      :titleIcon="require('@/assets/Icons/globe.svg')" 
-      :titleIconAlt="'globe icon'"
-      :titleIconClass="'globe-icon'"
-      @goBack="goBack"
+      title="Global History"
+      currentView="global_history"
     />
   </div>
 </template>
@@ -30,9 +28,6 @@
 import BottomBar from "@/components/BottomBar.vue"
 import GuideButton from "@/components/GuideButton.vue"
 import { ref, computed } from "vue"
-import { useRouter } from "vue-router"
-
-const router = useRouter()
 
 const search = ref("")
 const records = ref([
@@ -59,9 +54,6 @@ const filteredRecords = computed(() => {
   )
 })
 
-function goBack() {
-  router.back()
-}
 </script>
 
 <style lang="scss" scoped>

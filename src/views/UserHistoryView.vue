@@ -8,7 +8,9 @@
         <input type="text" v-model="search" placeholder="search record..." />
       </div>
       <div class="records">
-        <div v-for="item in filteredRecords" :key="item.id" class="record-row">
+        <div v-if="isLoading" class="loading-message">Loading...</div>
+        <div v-else-if="filteredRecords.length === 0 && !isLoading" class="no-records">No transaction records found</div>
+        <div v-else v-for="item in filteredRecords" :key="item.id" class="record-row">
           <span class="item-left">{{ item.leftName }} {{ item.leftCount }}</span>
           <span class="exchange-arrow">⇄</span>
           <span class="item-right">{{ item.rightName }} {{ item.rightCount }}</span>
@@ -27,23 +29,24 @@
 <script setup>
 import BottomBar from "@/components/BottomBar.vue"
 import GuideButton from "@/components/GuideButton.vue"
-import { ref, computed } from "vue"
+import { ref, computed, onMounted } from "vue"
+import { useRouter } from "vue-router"
+import { useUserStore } from "@/stores/user"
 
-
+const router = useRouter()
+const userStore = useUserStore()
 const search = ref("")
-const records = ref([
-  { id: 1, leftName: "蘋果", leftCount: 2, rightName: "鳳梨", rightCount: 1 },
-  { id: 2, leftName: "香蕉", leftCount: 3, rightName: "橘子", rightCount: 2 },
-  { id: 3, leftName: "蘋果", leftCount: 1, rightName: "芒果", rightCount: 1 },
-  { id: 4, leftName: "西瓜", leftCount: 1, rightName: "香蕉", rightCount: 2 },
-  { id: 5, leftName: "百香果", leftCount: 2, rightName: "西瓜", rightCount: 1 },
-  { id: 6, leftName: "葡萄", leftCount: 3, rightName: "蘋果", rightCount: 3 },
-  { id: 7, leftName: "鳳梨", leftCount: 1, rightName: "西瓜", rightCount: 1 },
-  { id: 8, leftName: "柳丁", leftCount: 2, rightName: "香蕉", rightCount: 1 },
-  { id: 9, leftName: "柚子", leftCount: 1, rightName: "蘋果", rightCount: 2 },
-  { id: 10, leftName: "蜜棗", leftCount: 2, rightName: "葡萄", rightCount: 1 },
-  { id: 11, leftName: "芒果", leftCount: 2, rightName: "柳丁", rightCount: 1 }
-])
+const records = ref([])
+const isLoading = ref(false)
+
+onMounted(() => {
+  userStore.restoreUser()
+  if (!userStore.isLoggedIn) {
+    router.push({ name: 'login' })
+    return
+  }
+  fetchTradeHistory()
+})
 
 const filteredRecords = computed(() => {
   if (!search.value) return records.value
@@ -55,6 +58,47 @@ const filteredRecords = computed(() => {
   )
 })
 
+async function fetchTradeHistory() {
+  if (!userStore.email) return
+  
+  isLoading.value = true
+
+  const params = new URLSearchParams({
+    user: userStore.email
+  })
+
+  try {
+    const response = await fetch(`/api/trade/trade-history?${params.toString()}`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
+    })
+
+    const data = await response.json()
+
+    if (response.ok) {
+      if (data.trade_history && Array.isArray(data.trade_history)) {
+        records.value = data.trade_history.map((item, index) => ({
+          id: item.trade_id || index + 1,
+          leftName: item.item_a,
+          leftCount: item.quantity_a,
+          rightName: item.item_b,
+          rightCount: item.quantity_b,
+          timestamp: item.timestamp
+        }))
+      } else {
+        records.value = []
+      }
+    } else {
+      console.error('Failed to fetch trade history:', data)
+      records.value = []
+    }
+  } catch (error) {
+    console.error('Network error:', error)
+    records.value = []
+  } finally {
+    isLoading.value = false
+  }
+}
 </script>
 
 <style lang="scss" scoped>
@@ -82,10 +126,10 @@ const filteredRecords = computed(() => {
   display: flex;
   align-items: center;
   width: 90%;
-  background: rgba(255, 255, 255, 0.1); /* 添加半透明背景 */
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   padding: 10px 16px;
-  margin-bottom: 1rem; /* 與記錄列表的間距 */
+  margin-bottom: 1rem;
   
   .search-icon {
     flex: 0 0 auto;  
@@ -146,6 +190,13 @@ const filteredRecords = computed(() => {
   gap: 14px;
 }
 
+.loading-message, .no-records {
+  text-align: center;
+  color: #ccc;
+  font-size: 1.1rem;
+  padding: 2rem;
+}
+
 .record-row {
   background: #fff;
   border-radius: 11px;
@@ -171,7 +222,6 @@ const filteredRecords = computed(() => {
   }
 }
 
-/* 響應式設計 */
 @media (max-width: 480px) {
   .history-content {
     padding: 2.5rem 0.5rem 1rem 0.5rem;
@@ -228,6 +278,11 @@ const filteredRecords = computed(() => {
       font-size: 1.6rem;
       -webkit-text-stroke: 0.5px #222;
     }
+  }
+  
+  .loading-message, .no-records {
+    font-size: 0.9rem;
+    padding: 1.5rem;
   }
 }
 
@@ -298,6 +353,10 @@ const filteredRecords = computed(() => {
       -webkit-text-stroke: 0.2px #222;
     }
   }
+  
+  .loading-message, .no-records {
+    font-size: 0.6rem;
+    padding: 1rem;
+  }
 }
-
 </style>

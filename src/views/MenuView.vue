@@ -7,7 +7,7 @@
           v-for="item in menuItems"
           :key="item.label"
           class="menu-list-item"
-          :class="{ active: activeMenu === item.to.name }"
+          :class="{ active: item.to && activeMenu === item.to.name }"
         >
           <button class="menu-btn" @click="handleMenuClick(item)">
             {{ item.label }}
@@ -22,10 +22,12 @@
 <script setup>
 import BottomBar from "@/components/BottomBar.vue";
 import { useRoute, useRouter } from "vue-router";
-import { computed, ref, onMounted } from "vue";
+import { computed, ref, onMounted, nextTick } from "vue";
+import { useUserStore } from "@/stores/user";
 
 const router = useRouter();
 const route = useRoute();
+const userStore = useUserStore();
 
 const activeMenu = ref("");
 
@@ -37,10 +39,6 @@ const menuMap = {
   register: [
     { label: "Register", to: { name: "register" } },
     { label: "Login", to: { name: "login" } },
-    { label: "Guide", to: { name: "guide" } },
-    { label: "Trade", to: { name: "trade" } },
-    { label: "History", to: { name: "user_history" } },
-    { label: "Select Item", to: { name: "select_item" } },
   ],
   login: [
     { label: "Login", to: { name: "login" } },
@@ -48,27 +46,50 @@ const menuMap = {
   ],
   trade: [
     { label: "Trade", to: { name: "trade" } },
-    { label: "Guide", to: { name: "guide" } },
     { label: "History", to: { name: "user_history" } },
-    { label: "Logout", to: { name: "logout" } },
+    { label: "Dashboard", to: { name: "dashboard" } },
+    { label: "Menu", to: { name: "menu", query: { view: "trade" } } },
+    { label: "Logout", action: "logout" },
   ],
   user_history: [
+    {label: "User", to: {name: "user_history"}},
     {label: "Global", to: {name: "global_history"}},
-    {label: "User", to: {name: "user_history"}}
+    {label: "Trade", to: {name: "trade"}},
+    { label: "Logout", action: "logout" },
   ],
   global_history: [
     {label: "Global", to: {name: "global_history"}},
-    {label: "User", to: {name: "user_history"}}
+    {label: "User", to: {name: "user_history"}},
+    {label: "Trade", to: {name: "trade"}},
+    { label: "Logout", action: "logout" },
   ]
 };
 
 const menuItems = computed(() => menuMap[route.query.view] || []);
 
 function handleMenuClick(item) {
-  activeMenu.value = item.to.name;
-  if (item.to) router.push(item.to);
+  if (item.action === "logout") {
+    handleLogout();
+  } else if(item.to){
+    activeMenu.value = item.to.name || "";
+    router.push(item.to);
+  }
+}
+
+async function handleLogout() {
+  try {
+    userStore.logout();
+    
+    await nextTick();
+    
+    await router.replace({ name: "login" });
+  } catch (error) {    
+    window.location.href = '/login';
+  }
 }
 </script>
+
+
 
 <style scoped>
 .menu-bg {

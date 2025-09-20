@@ -6,13 +6,14 @@
     </div>
     <div class="records">
       <div
-        v-for="item in filteredItems"
+        v-for="(item, idx) in filteredItems"
         :key="item.id"
         class="record-row"
         tabindex="0"
         ref="rows"
         @focus="scrollIntoView($event)"
         @click="selectItem(item)"
+        @keydown="handleRowKeydown($event, idx)"
         style="cursor:pointer;"
       >
         <span class="item-name">{{ item.name }}</span>
@@ -222,6 +223,7 @@ export default {
         const bottomBarHeight = 80; // 根據你的 BottomBar 高度調整
         // print elementRect.top
         console.log('elementRect.top:', elementRect.top);
+        console.log('searchBarHeight:', searchBarHeight);
         if (elementRect.bottom > viewportHeight - bottomBarHeight) {
           element.scrollIntoView({ 
             block: 'center', 
@@ -235,30 +237,55 @@ export default {
           });
         }
       }, 25);
+    },
+    handleRowKeydown(e, idx) {
+      const keys = [
+        "0","1","2","3","4","5","6","7","8","9","*","#",
+        ..."abcdefghijklmnopqrstuvwxyz",
+        ..."ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+      ];
+      if (keys.includes(e.key)) {
+        if (this.$refs.searchInput && this.$refs.searchInput.focus) {
+          if (document.activeElement == this.$refs.searchInput)
+            this.search += e.key;
+          this.$refs.searchInput.focus();
+          const inputEl = this.$refs.searchInput;
+          if (inputEl.setSelectionRange) {
+            inputEl.setSelectionRange(this.search.length, this.search.length);
+          }
+          e.preventDefault();
+        }
+      }
+      // this.items[2] = {id: 3, name: e.key} // debug only
+      if (e.key === "ArrowUp") {
+        e.preventDefault();
+        if (idx > 0) {
+          this.$refs.rows[idx - 1].focus();
+        } else {
+          // focus 回 search bar
+          if (this.$refs.searchInput && this.$refs.searchInput.focus) {
+            this.$refs.searchInput.focus();
+          }
+        }
+      }
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        if (idx < this.filteredItems.length - 1) {
+          this.$refs.rows[idx + 1].focus();
+        }
+      }
     }
   }
 };
-const search = ref("");
+
+// 讓 searchInput 正確綁定到 input DOM
 const searchInput = ref(null);
 
-function handleKeyDown(e) {
-  const keys = ['0','1','2','3','4','5','6','7','8','9','*','#'];
-  const tag = document.activeElement.tagName.toLowerCase();
-  // 如果不是在 input/textarea 並且按的是目標鍵
-  if (keys.includes(e.key) && tag !== 'input' && tag !== 'textarea') {
-    if (searchInput.value) {
-      searchInput.value.focus();
-      search.value += e.key; // 寫入 value
-      e.preventDefault();    // 防止原本行為
-    }
-  }
-}
-
 onMounted(() => {
-  document.addEventListener('keydown', handleKeyDown);
+  document.addEventListener("keydown", handleKeyDown);
 });
 onUnmounted(() => {
-  document.removeEventListener('keydown', handleKeyDown);
+  document.removeEventListener("keydown", handleKeyDown);
 });
 
 </script>

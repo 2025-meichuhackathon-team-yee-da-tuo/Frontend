@@ -70,7 +70,6 @@ const form = ref({ email: "", password: "", confirm: "" });
 const isLoading = ref(false);
 const errors = ref({ email: '', password: '', confirm: '' });
 
-// 清除錯誤訊息當使用者開始輸入
 watch(() => form.value.email, () => { errors.value.email = '' });
 watch(() => form.value.password, () => { errors.value.password = '' });
 watch(() => form.value.confirm, () => { errors.value.confirm = '' });

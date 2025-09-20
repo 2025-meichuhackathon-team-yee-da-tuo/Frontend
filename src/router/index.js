@@ -3,11 +3,11 @@ import LoginView from "../views/LoginView.vue";
 import RegisterView from "@/views/RegisterView.vue";
 import MenuView from "@/views/MenuView.vue";
 import TradeView from "@/views/TradeView.vue";
-import GuideView from "@/views/GuideView.vue";
 import UserHistoryView from "@/views/UserHistoryView.vue";
 import GlobalHistoryView from "@/views/GlobalHistoryView.vue";
 import SelectItemView from "@/views/SelectItemView.vue";
 import DashboardView from "@/views/DashboardView.vue";
+import GuideView from "@/views/GuideView.vue";
 const routes = [
   {
     path: "/",

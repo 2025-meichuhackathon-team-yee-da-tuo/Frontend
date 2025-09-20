@@ -230,26 +230,14 @@ export default {
           headers: { "Content-Type": "application/json" }
         });
         const data = await resp.json();
-
-        // 後端回傳：string[]（建議清單）
-        const list = Array.isArray(data) ? data : [];
-
-        // 規則：若清單中沒有「與輸入完全相同」的字串，就把輸入塞在最上面
         const norm = s => (s ?? "").trim().toLowerCase();
-        const hasExact = list.some(name => norm(name) === norm(keyword));
+        const hasExact = data.some(name => norm(name) === norm(keyword));
 
         // 合併：若沒有精確匹配，將 keyword 放最前；並做去重（以正規化後的字串為 key）
-        const merged = (hasExact ? list : [keyword, ...list]).filter(Boolean);
-        const seen = new Set();
-        const uniqueNames = merged.filter(n => {
-          const k = norm(n);
-          if (seen.has(k)) return false;
-          seen.add(k);
-          return true;
-        });
+        const merged = hasExact ? data : [keyword, ...data];
 
         // 轉回你原本使用的 { id, name } 結構
-        this.items = uniqueNames.map((name, i) => ({ id: i + 1, name }));
+        this.items = merged.map((name, i) => ({ id: i + 1, name }));
       } catch (err) {
         console.error("Error fetching fuzzy items:", err);
         // 即使失敗，也把輸入字放第一個，維持體驗

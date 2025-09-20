@@ -3,7 +3,7 @@
     <GuideButton />
     
     <div class="trade-content">
-      <div class="item-section">
+      <div class="item-section-own">
         <div class="label-row">
           <span class="label">Owned Item</span>
           <span class="label">Quantity</span>
@@ -40,7 +40,7 @@
         <span class="arrow-icon">↓</span>
       </div>
 
-      <div class="item-section">
+      <div class="item-section-desire">
         <div class="label-row">
           <span class="label">Desired Item</span>
           <span class="label">Quantity</span>
@@ -75,6 +75,7 @@
 
       <div class="button-section">
         <button 
+          ref="submitBtn"
           class="submit-btn" 
           @click="submitTrade"
           :disabled="isLoading"
@@ -113,12 +114,15 @@ const errors = ref({
   general: ''
 })
 
+const submitBtn = ref(null)
+
 onMounted(() => {
-  userStore.restoreUser()
-  if (!userStore.isLoggedIn) {
-    router.push({ name: 'login' })
+  if (submitBtn.value) {
+    submitBtn.value.addEventListener('focus', () => {
+      submitBtn.value.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
   }
-})
+});
 
 watch(() => ownedItemName.value, () => { errors.value.item_a = '' })
 watch(() => ownedItemQty.value, () => { errors.value.quantity_a = '' })
@@ -240,7 +244,7 @@ watch(() => route.query, syncFromQuery, { immediate: true, deep: true })
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 3rem 0.7rem 1.2rem 0.7rem;
+  padding: 3rem 0.7rem 3rem 0.7rem;
   box-sizing: border-box;
 }
 
@@ -337,23 +341,29 @@ watch(() => route.query, syncFromQuery, { immediate: true, deep: true })
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-.item-section {
+.item-section-own, .item-section-desire {
   width: 100%;
   max-width: 420px;
-  margin: 0.5rem 0;
-  padding: 0.8rem 0.7rem;
+  /* margin: 0 0 0.3rem 0; */
+  margin-top: 0.3rem;
+  padding: 0.3rem 0.3rem;
   background: #232325;
   border-radius: 1.5rem;
   box-sizing: border-box;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
+.item-section-desire {
+  margin-top: -0.3rem;
+}
+
 .button-section {
-  margin-top: 1rem;
+  margin-top: 0.7rem;
   width: 100%;
   max-width: 420px;
   display: flex;
   justify-content: center;
+  /* padding-bottom: 4rem; */
 }
 
 .submit-btn {

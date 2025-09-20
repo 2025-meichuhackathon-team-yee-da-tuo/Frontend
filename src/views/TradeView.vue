@@ -17,12 +17,6 @@
             <span v-if="ownedItemName">{{ ownedItemName }}</span>
             <span v-else>+</span>
           </button>
-          <!-- <input 
-            v-model="ownedItemName" 
-            class="input input-name"
-            :class="{ 'error': errors.item_a }"
-            placeholder="Enter item name"
-          /> -->
           <input
             v-model.number="ownedItemQty"
             :placeholder="ownedQtyHint"
@@ -54,12 +48,6 @@
             <span v-if="desiredItemName">{{ desiredItemName }}</span>
             <span v-else>+</span>
           </button>
-          <!-- <input 
-            v-model="desiredItemName" 
-            class="input input-name"
-            :class="{ 'error': errors.item_b }"
-            placeholder="Enter item name"
-          /> -->
           <input
             v-model.number="desiredItemQty"
             :placeholder="desiredQtyHint"
@@ -94,11 +82,12 @@
 <script setup>
 import BottomBar from "@/components/BottomBar.vue"
 import GuideButton from "@/components/GuideButton.vue"
-import { ref, computed, onMounted, watch } from "vue"
+import { ref, computed, onMounted, onActivated, onUnmounted, watch } from "vue"
 import { useRoute, useRouter } from "vue-router"
 import { useUserStore } from "@/stores/user"
 
 const router = useRouter()
+const route = useRoute()
 const userStore = useUserStore()
 
 const ownedItemName = ref("")
@@ -116,13 +105,57 @@ const errors = ref({
 
 const submitBtn = ref(null)
 
+// 認證檢查函數
+function checkAuthStatus() {
+  userStore.restoreUser()
+  if (!userStore.isLoggedIn || !userStore.email) {
+    router.replace({ name: 'login' })
+    return false
+  }
+  return true
+}
+
 onMounted(() => {
+  if (!checkAuthStatus()) return
+  
+  syncFromQuery()
+  
   if (submitBtn.value) {
     submitBtn.value.addEventListener('focus', () => {
       submitBtn.value.scrollIntoView({ behavior: 'smooth', block: 'center' });
     });
   }
-});
+})
+
+onActivated(() => {
+  checkAuthStatus()
+})
+
+function handleVisibilityChange() {
+  if (!document.hidden) {
+    setTimeout(() => {
+      checkAuthStatus()
+    }, 100)
+  }
+}
+
+function handleFocus() {
+  setTimeout(() => {
+    checkAuthStatus()
+  }, 100)
+}
+
+onMounted(() => {
+  if (checkAuthStatus()) {
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    window.addEventListener('focus', handleFocus)
+  }
+})
+
+onUnmounted(() => {
+  document.removeEventListener('visibilitychange', handleVisibilityChange)
+  window.removeEventListener('focus', handleFocus)
+})
 
 watch(() => ownedItemName.value, () => { errors.value.item_a = '' })
 watch(() => ownedItemQty.value, () => { errors.value.quantity_a = '' })
@@ -142,10 +175,7 @@ const desiredQtyHint = computed(() => {
 })
 
 async function submitTrade() {
-  if (!userStore.isLoggedIn || !userStore.email) {
-    router.push({ name: 'login' })
-    return
-  }
+  if (!checkAuthStatus()) return
 
   errors.value = {
     item_a: '',
@@ -155,7 +185,6 @@ async function submitTrade() {
     general: ''
   }
 
-  
   if (!ownedItemName.value) errors.value.item_a = 'Please enter the name of the item you own'
   if (!ownedItemQty.value) errors.value.quantity_a = 'Please enter the quantity you own'
   if (!desiredItemName.value) errors.value.item_b = 'Please enter the name of the item you want'
@@ -206,6 +235,8 @@ async function submitTrade() {
 }
 
 function goSelect(type) {
+  if (!checkAuthStatus()) return
+  
   router.push({
     name: "select_item", 
     query: {
@@ -216,15 +247,12 @@ function goSelect(type) {
   })
 }
 
-const route = useRoute()
-
 function syncFromQuery(){
   if(route.query.ownedItem) ownedItemName.value = route.query.ownedItem
   if(route.query.desiredItem) desiredItemName.value = route.query.desiredItem
 }
-onMounted(syncFromQuery)
-watch(() => route.query, syncFromQuery, { immediate: true, deep: true })
 
+watch(() => route.query, syncFromQuery, { immediate: true, deep: true })
 </script>
 
 <style scoped>
@@ -344,7 +372,6 @@ watch(() => route.query, syncFromQuery, { immediate: true, deep: true })
 .item-section-own, .item-section-desire {
   width: 100%;
   max-width: 420px;
-  /* margin: 0 0 0.3rem 0; */
   margin-top: 0.3rem;
   padding: 0.3rem 0.3rem;
   background: #232325;
@@ -363,7 +390,6 @@ watch(() => route.query, syncFromQuery, { immediate: true, deep: true })
   max-width: 420px;
   display: flex;
   justify-content: center;
-  /* padding-bottom: 4rem; */
 }
 
 .submit-btn {
@@ -388,6 +414,14 @@ watch(() => route.query, syncFromQuery, { immediate: true, deep: true })
   &:disabled {
     opacity: 0.6;
     cursor: not-allowed;
+  }
+}
+
+.item-btn {
+  cursor: pointer;
+  
+  &:hover {
+    background: #f0f0f0;
   }
 }
 

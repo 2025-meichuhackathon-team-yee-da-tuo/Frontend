@@ -2,9 +2,9 @@
   <div class="btm-bar">
     <router-link
       v-if="showMenu"
-      :to="{ name: 'menu', query: { view: currentView } }"
       class="btm-bar-btn"
       aria-label="page selection"
+      tabindex="-1"
     >
       <img src="@/assets/Icons/hamburger-bar.svg" alt="page selection" />
     </router-link>
@@ -38,18 +38,15 @@ export default {
       default: "",
     }
   },
-  setup() {
+  setup(props) {
     const router = useRouter();
     
     function goBack() {
       router.back();
     }
-    function goHamburger() {
-      router.push({ name: 'menu', query: { view: 'register' } })
-    }
     function handleEsc(e) {
       if (e.key === 'Escape') {
-        goHamburger()
+        router.push({ name: 'menu', query: { view: props.currentView } })
       }
     }
     onMounted(() => {
@@ -109,6 +106,11 @@ export default {
   min-width: 2.5rem;
   min-height: 2.5rem;
   padding: 0.75rem;
+}
+
+.btm-bar-btn:focus {
+  outline: none;
+  box-shadow: none;
 }
 
 .btm-bar-header {

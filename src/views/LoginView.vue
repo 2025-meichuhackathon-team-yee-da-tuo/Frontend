@@ -13,8 +13,10 @@
               v-model="login.email"
               type="email"
               placeholder="example@example.com"
+              :class="{ 'error': errors.email }"
               required
             />
+            <div v-if="errors.email" class="error-message">{{ errors.email }}</div>
           </div>
           <div class="auth-col">
             <span class="auth-ico">
@@ -24,11 +26,18 @@
               v-model="login.password"
               type="password"
               placeholder="Password"
+              :class="{ 'error': errors.password }"
               required
             />
+            <div v-if="errors.password" class="error-message">{{ errors.password }}</div>
           </div>
-          <button type="submit" class="auth-btn" aria-label="login button">
-            Login
+          <button 
+            type="submit" 
+            class="auth-btn" 
+            :disabled="isLoading"
+            aria-label="login button"
+          >
+            {{ isLoading ? 'Loading...' : 'Login' }}
           </button>
         </form>
       </div>
@@ -41,16 +50,76 @@
 <script setup>
 import BottomBar from "@/components/BottomBar.vue"
 import GuideButton from "@/components/GuideButton.vue"
-import { ref } from "vue"
+import { ref, watch } from "vue"
+import { useRouter } from "vue-router"
 
+const router = useRouter()
 const login = ref({
   email: "",
   password: "",
 })
 
-function onLogin() {
-  console.log("Login info", login.value)
-  alert("登入資訊:\n" + JSON.stringify(login.value, null, 2))
+const isLoading = ref(false)
+const errors = ref({ email: '', password: '' })
+
+watch(() => login.value.email, () => { errors.value.email = '' })
+watch(() => login.value.password, () => { errors.value.password = '' })
+
+function clearErrors() {
+  errors.value = { email: '', password: '' }
+}
+
+async function onLogin() {
+  clearErrors()
+  isLoading.value = true
+
+  try {
+    const response = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: login.value.email,
+        password: login.value.password
+      })
+    })
+
+    const data = await response.json()
+
+    if (response.ok) {
+      switch (data.status || data.code || 0) {
+        case 0:
+          router.push({ name: 'trade' })
+          break
+        case 1:
+          errors.value.email = 'Email or password is incorrect!';
+          errors.value.password = 'Email or password is incorrect!';
+          break
+        default:
+          router.push({ name: 'trade' })
+      }
+    } else {
+      if (data.status !== undefined || data.code !== undefined) {
+        const statusCode = data.status || data.code
+        switch (statusCode) {
+          case 1:
+            errors.value.email = 'Email or password is incorrect!';
+            errors.value.password = 'Email or password is incorrect!';
+            break
+          default:
+            errors.value.email = data.message || 'Login failed, please try again later'
+        }
+      } else {
+        errors.value.email = data.message || 'Login failed, please try again later'
+      }
+    }
+  } catch (error) {
+    errors.value.email = 'Network error, please try again later'
+    console.error('API request error:', error)
+  } finally {
+    isLoading.value = false
+  }
 }
 </script>
 
@@ -93,7 +162,7 @@ function onLogin() {
 .auth-col {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.3rem;
 }
 
 .auth-ico {
@@ -111,7 +180,7 @@ function onLogin() {
   flex: 1;
   font-size: 1.4rem;
   border-radius: 0.7rem;
-  border: none;
+  border: 2px solid transparent;
   outline: none;
   padding: 0.45rem 0.7rem;
   color: #222;
@@ -125,6 +194,19 @@ function onLogin() {
   &::placeholder {
     color: #999;
   }
+  
+  &.error {
+    border-color: #ff4444;
+    box-shadow: 0 0 0 2px rgba(255, 68, 68, 0.3);
+  }
+}
+
+.error-message {
+  color: #ff4444;
+  font-size: 0.9rem;
+  margin-top: 0.2rem;
+  margin-left: 0.2rem;
+  min-height: 1.2rem;
 }
 
 .auth-btn {
@@ -141,12 +223,17 @@ function onLogin() {
   font-weight: 600;
   transition: background-color 0.2s ease;
   
-  &:hover {
+  &:hover:not(:disabled) {
     background: #000;
   }
   
   &:active {
     transform: translateY(1px);
+  }
+  
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
   }
 }
 
@@ -177,6 +264,10 @@ function onLogin() {
   
   .auth-col {
     gap: 0.3rem;
+  }
+  
+  .error-message {
+    font-size: 0.8rem;
   }
 }
 
@@ -213,6 +304,10 @@ function onLogin() {
     font-size: 0.8rem;
     margin-left: 0.5rem;
     margin-right: 0.5rem;
+  }
+  
+  .error-message {
+    font-size: 0.7rem;
   }
 }
 </style>

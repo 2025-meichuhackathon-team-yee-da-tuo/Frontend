@@ -6,6 +6,8 @@ import TradeView from "@/views/TradeView.vue";
 import GuideView from "@/views/GuideView.vue";
 import UserHistoryView from "@/views/UserHistoryView.vue";
 import GlobalHistoryView from "@/views/GlobalHistoryView.vue";
+import SelectItemView from "@/views/SelectItemView.vue";
+import DashboardView from "@/views/DashboardView.vue";
 const routes = [
   {
     path: "/",
@@ -43,6 +45,16 @@ const routes = [
     path: "/global_history",
     name: "global_history",
     component: GlobalHistoryView,
+  },
+  {
+    path: "/select_item",
+    name: "select_item",
+    component: SelectItemView,
+  },
+  {
+    path: "/dashboard/:item",
+    name: "dashboard",
+    component: DashboardView,
   },
 ];
 

@@ -34,7 +34,6 @@ import { useRouter } from "vue-router"
 
 const router = useRouter()
 
-// 響應式數據
 const search = ref("")
 const records = ref([
   { id: 1, leftName: "蘋果", leftCount: 2, rightName: "鳳梨", rightCount: 1 },
@@ -50,7 +49,6 @@ const records = ref([
   { id: 11, leftName: "芒果", leftCount: 2, rightName: "柳丁", rightCount: 1 }
 ])
 
-// 計算屬性
 const filteredRecords = computed(() => {
   if (!search.value) return records.value
   const keyword = search.value.trim()
@@ -61,7 +59,6 @@ const filteredRecords = computed(() => {
   )
 })
 
-// 方法
 function goBack() {
   router.back()
 }
@@ -71,31 +68,31 @@ function goBack() {
 .history-bg {
   width: 100vw;
   min-height: 100vh;
-  background: #2d2d2d; /* 與其他頁面保持一致的背景色 */
+  background: #2d2d2d;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  position: relative; /* 讓 GuideButton 的 absolute 定位有參考點 */
+  position: relative;
 }
 
 .history-content {
-  flex: 1; /* 佔據剩餘空間 */
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 3rem 0.7rem 1.2rem 0.7rem; /* 增加頂部 padding 避免與 GuideButton 重疊 */
+  padding: 3rem 0.7rem 1.2rem 0.7rem; 
   box-sizing: border-box;
-  overflow-y: auto; /* 允許內容滾動 */
+  overflow-y: auto;
 }
 
 .search-bar {
   display: flex;
   align-items: center;
   width: 90%;
-  background: rgba(255, 255, 255, 0.1); /* 添加背景色 */
+  background: rgba(255, 255, 255, 0.1); 
   border-radius: 12px;
   padding: 10px 16px;
-  margin-bottom: 1rem; /* 添加與記錄列表的間距 */
+  margin-bottom: 1rem; 
   
   .search-icon {
     flex: 0 0 auto;  
@@ -153,7 +150,7 @@ function goBack() {
   width: 90%;
   display: flex;
   flex-direction: column;
-  gap: 14px; /* 使用 gap 取代 margin-top */
+  gap: 14px;
 }
 
 .record-row {
@@ -181,26 +178,6 @@ function goBack() {
   }
 }
 
-/* 響應式設計 */
-@media (max-width: 480px) {
-  .history-content {
-    padding: 2.5rem 0.5rem 1rem 0.5rem;
-  }
-  
-  .search-bar {
-    width: 95%;
-  }
-  
-  .records {
-    width: 95%;
-    gap: 12px;
-  }
-  
-  .record-row {
-    padding: 10px 18px;
-    font-size: 1.2rem;
-  }
-}
 
 @media (max-width: 300px) {
   .history-content {
@@ -256,19 +233,19 @@ function goBack() {
 
 @media (max-width: 200px) {
   .history-content {
-    padding: 1.33rem 0.27rem 0.53rem 0.27rem; /* 2rem * 2/3 等比例縮放 */
+    padding: 1.33rem 0.27rem 0.53rem 0.27rem; 
   }
   
   .search-bar {
-    padding: 0.33rem 0.5rem; /* 縮放 padding */
+    padding: 0.33rem 0.5rem;
     
     .search-icon {
-      width: 12px; /* 18px * 2/3 */
+      width: 12px; 
       height: 12px;
       margin-right: 0.33rem;
       
       &::before {
-        width: 8px; /* 12px * 2/3 */
+        width: 8px;
         height: 8px;
         border: 1px solid #fff;
         left: 0px;
@@ -276,7 +253,7 @@ function goBack() {
       }
       
       &::after {
-        width: 4px; /* 6px * 2/3 */
+        width: 4px;
         height: 1px;
         bottom: 1px;
         right: 1px;
@@ -284,23 +261,23 @@ function goBack() {
     }
     
     input {
-      padding: 0.27rem 0.33rem; /* 等比例縮放 */
-      font-size: 0.6rem; /* 0.9rem * 2/3 */
+      padding: 0.27rem 0.33rem;
+      font-size: 0.6rem; 
     }
   }
   
   .records {
-    gap: 0.4rem; /* 9px * 2/3 ≈ 6px */
+    gap: 0.4rem;
   }
   
   .record-row {
-    border-radius: 0.33rem; /* 8px * 2/3 ≈ 5px */
-    padding: 0.33rem 0.5rem; /* 等比例縮放 */
-    font-size: 0.67rem; /* 1rem * 2/3 */
+    border-radius: 0.33rem; 
+    padding: 0.33rem 0.5rem; 
+    font-size: 0.67rem;
     
     .exchange-arrow {
-      flex: 0 0 2rem; /* 40px * 2/3 ≈ 27px */
-      font-size: 1rem; /* 1.5rem * 2/3 */
+      flex: 0 0 2rem;
+      font-size: 1rem;
       -webkit-text-stroke: 0.33px #222;
     }
   }

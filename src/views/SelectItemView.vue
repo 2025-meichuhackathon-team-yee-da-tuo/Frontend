@@ -2,22 +2,25 @@
   <div class="menu-bg">
     <div class="search-bar">
       <span class="search-icon"></span>
-      <input type="text" v-model="search" placeholder="search record..." />
+      <input type="text" v-model="search" placeholder="search item..." />
     </div>
     <div class="records">
-      <div v-for="item in filteredRecords" :key="item.id" class="record-row">
-        <span class="item-left">{{ item.leftName }} {{ item.leftCount }}</span>
-        <span class="exchange-arrow">⇄</span>
-        <span class="item-right">{{ item.rightName }} {{ item.rightCount }}</span>
+      <div
+        v-for="item in filteredItems"
+        :key="item.id"
+        :class="['record-row', 'select-row', { 'select-active': hoverItem === item.id }]"
+        @mouseenter="hoverItem = item.id"
+        @mouseleave="hoverItem = null"
+        @click="goDashboard(item)"
+        style="cursor:pointer;"
+      >
+        <span class="item-name">{{ item.name }}</span>
       </div>
     </div>
-    <BottomBar :showMenu="true" 
-               :titleIcon="require('@/assets/Icons/user.svg')" 
-               :titleIconAlt="'user icon'"
-                :titleIconClass="'user-icon'"
-               @goBack="goBack"/>
   </div>
 </template>
+
+
 
 <style lang="scss" scoped>
 .fixed-lightbulb {
@@ -46,7 +49,6 @@
   width: 90%;
   border-radius: 12px;
   padding: 10px 16px;
-  // margin-bottom: 16px;
   margin-left: 0; 
   .search-icon {
     flex: 0 0 auto;  
@@ -68,7 +70,6 @@
       box-sizing: border-box;
       background: transparent;
     }
-    // 放大鏡柄
     &::after {
       content: '';
       display: block;
@@ -102,24 +103,32 @@
   border-radius: 11px;
   display: flex;
   align-items: center;
+  justify-content: center;
   margin-top: 14px;
   padding: 12px 24px;
   font-size: 1.35rem;
   font-weight: 600;
-  .item-left, .item-right {
-    flex: 1;
-    color: #222;
-    text-align: center;
-  }
-  .exchange-arrow {
-    flex: 0 0 50px;
-    font-size: 2.1rem;
-    -webkit-text-stroke: 1px #222; 
-    color: #222;
+  .item-name {
+    font-weight: bold;
+    color: inherit; 
     text-align: center;
   }
 }
+.select-row {
+  color: #222;
+  border: 2px solid #e0e0e0;
+  transition: background 0.3s, color 0.3s, transform 0.3s, box-shadow 0.3s;
+  box-shadow: 0 2px 8px #2221;
+}
 
+.select-active,
+.select-row:hover {
+  background: #222;
+  color: #fff;
+  border-color: #ddd;
+  transform: scale(1.05);
+  box-shadow: 0 4px 18px #2226;
+}
 
 @media (max-width: 300px) {
   .menu-bg {
@@ -232,50 +241,47 @@ import BottomBar from "@/components/BottomBar.vue";
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 const router = useRouter();
-const login = ref({
-  email: "",
-  password: "",
-});
 
 function goBack() {
   router.back();
 }
 
-function onLogin() {
-  console.log("Login info", login.value);
-}
 export default {
-  name: "HistoryPage",
+  name: "SelectItemPage",
   components: { BottomBar },
   data() {
     return {
       search: "",
-      records: [
-        { id: 1, leftName: "蘋果", leftCount: 2, rightName: "鳳梨", rightCount: 1 },
-        { id: 2, leftName: "香蕉", leftCount: 3, rightName: "橘子", rightCount: 2 },
-        { id: 3, leftName: "蘋果", leftCount: 1, rightName: "芒果", rightCount: 1 },
-        { id: 4, leftName: "西瓜", leftCount: 1, rightName: "香蕉", rightCount: 2 },
-        { id: 5, leftName: "百香果", leftCount: 2, rightName: "西瓜", rightCount: 1 },
-        { id: 6, leftName: "葡萄", leftCount: 3, rightName: "蘋果", rightCount: 3 },
-        { id: 7, leftName: "鳳梨", leftCount: 1, rightName: "西瓜", rightCount: 1 },
-        { id: 8, leftName: "柳丁", leftCount: 2, rightName: "香蕉", rightCount: 1 },
-        { id: 9, leftName: "柚子", leftCount: 1, rightName: "蘋果", rightCount: 2 },
-        { id: 10, leftName: "蜜棗", leftCount: 2, rightName: "葡萄", rightCount: 1 },
-        { id: 11, leftName: "芒果", leftCount: 2, rightName: "柳丁", rightCount: 1 }
+      hoverItem: null,  
+      items: [
+        { id: 1, name: "蘋果" },
+        { id: 2, name: "香蕉" },
+        { id: 3, name: "芒果" },
+        { id: 4, name: "西瓜" },
+        { id: 5, name: "鳳梨" },
+        { id: 6, name: "柳丁" },
+        { id: 7, name: "柚子" },
+        { id: 8, name: "葡萄" },
+        { id: 9, name: "蜜棗" },
+        { id: 10, name: "百香果" }
       ]
     };
   },
   computed: {
-    filteredRecords() {
-      if (!this.search) return this.records;
+    filteredItems() {
+      if (!this.search) return this.items;
       const keyword = this.search.trim();
-      return this.records.filter(
-        (r) =>
-          `${r.leftName}${r.leftCount}`.includes(keyword) ||
-          `${r.rightName}${r.rightCount}`.includes(keyword)
+      return this.items.filter(
+        item => item.name.includes(keyword)
       );
     }
   },
+  methods: {
+    goDashboard(item) {
+      // this.$router.push({ name: 'user_history' });
+      this.$router.push({ name: 'dashboard', params: { item: item.name } });
+    }
+  }
 };
 </script>
 

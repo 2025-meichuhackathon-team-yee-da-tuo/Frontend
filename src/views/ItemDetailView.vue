@@ -1,4 +1,4 @@
-<template>
+<!-- <template>
     <ItemTradePie :item="itemName" api-base="/api/trade" />
 </template>
 
@@ -9,4 +9,4 @@ import ItemTradePie from '@/components/ItemTradePie.vue' // 放在 components/ �
 
 const route = useRoute()
 const itemName = computed(() => route.params.name?.toString() ?? '')
-</script>
+</script> -->

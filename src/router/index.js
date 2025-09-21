@@ -8,7 +8,6 @@ import GlobalHistoryView from "@/views/GlobalHistoryView.vue";
 import SelectItemView from "@/views/SelectItemView.vue";
 import DashboardView from "@/views/DashboardView.vue";
 import GuideView from "@/views/GuideView.vue";
-import ItemDetailView from "@/views/ItemDetailView.vue";
 const routes = [
   {
     path: "/",
@@ -58,11 +57,6 @@ const routes = [
     path: "/dashboard",
     name: "dashboard",
     component: DashboardView,
-  },
-  {
-    path: "/dashboard/:name",
-    name: "item_detail",
-    component: ItemDetailView,
   },
 ];
 

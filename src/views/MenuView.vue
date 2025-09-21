@@ -64,7 +64,19 @@ const menuMap = {
     {label: "User", to: {name: "user_history"}},
     {label: "Trade", to: {name: "trade"}},
     { label: "Logout", action: "logout" },
-  ]
+  ],
+  dashboard: [
+    { label: "Dashboard", to: { name: "dashboard" } },
+    { label: "Trade", to: { name: "trade" } },
+    { label: "History", to: { name: "user_history" } },
+    { label: "Logout", action: "logout" },
+  ],
+  detailedItem: [
+    { label: "Dashboard", to: { name: "dashboard" } },
+    { label: "Trade", to: { name: "trade" } },
+    { label: "History", to: { name: "user_history" } },
+    { label: "Logout", action: "logout" },
+  ],
 };
 
 const menuItems = computed(() => menuMap[route.query.view] || []);

@@ -46,10 +46,7 @@
             :key="record.id" 
             class="record-row" 
             role="listitem"
-            tabindex="0"
             :aria-label="`Trade ${index + 1}: ${record.leftName} ${record.leftCount} for ${record.rightName} ${record.rightCount}`"
-            @click="goToTrade(record)" 
-            @keydown="handleTradeKeydown($event, record)"
           >
             <div class="item-left" aria-label="Left item">
               <span class="item-name">{{ record.leftName }}</span>
@@ -68,7 +65,7 @@
       </div>
     </div>
 
-    <BottomBar :showMenu="true" title="Item Details" currentView="detailedItem" />
+    <BottomBar :showMenu="false" title="Item Details" currentView="detailedItem" />
   </div>
 </template>
 
@@ -255,27 +252,8 @@
   padding: 12px 24px;
   font-size: 1rem;
   font-weight: 600;
-  transition: all 0.2s ease;
-  cursor: pointer;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   position: relative;
-  
-  &:focus {
-    outline: 3px solid #FF9800 !important;
-    outline-offset: 2px;
-    box-shadow: 0 0 0 1px rgba(255, 152, 0, 0.3) !important;
-  }
-  
-  &:hover {
-    background: #f5f5f5;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  }
-  
-  &:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-  }
   
   .item-left, .item-right {
     flex: 1;
@@ -726,45 +704,6 @@ export default {
       });
     },
     
-    handleTradeKeydown(e, record) {
-      switch (e.key) {
-        case "Enter":
-        case " ":
-          e.preventDefault();
-          this.goToTrade(record);
-          break;
-        case "Escape":
-          e.preventDefault();
-          // Focus back to the guide button or first record
-          const firstRecord = document.querySelector('.record-row');
-          if (firstRecord) {
-            firstRecord.focus();
-          }
-          break;
-        case "ArrowDown":
-          e.preventDefault();
-          this.focusNextRecord(e.target);
-          break;
-        case "ArrowUp":
-          e.preventDefault();
-          this.focusPreviousRecord(e.target);
-          break;
-      }
-    },
-    
-    focusNextRecord(currentElement) {
-      const records = document.querySelectorAll('.record-row');
-      const currentIndex = Array.from(records).indexOf(currentElement);
-      const nextIndex = (currentIndex + 1) % records.length;
-      records[nextIndex]?.focus();
-    },
-    
-    focusPreviousRecord(currentElement) {
-      const records = document.querySelectorAll('.record-row');
-      const currentIndex = Array.from(records).indexOf(currentElement);
-      const prevIndex = currentIndex === 0 ? records.length - 1 : currentIndex - 1;
-      records[prevIndex]?.focus();
-    }
   }
 };
 </script>

@@ -1,6 +1,11 @@
 <template>
   <div class="select-bg" role="main" aria-label="Item Details Page">
-    <GuideButton ref="guideBtn" />
+    <!-- App Bar -->
+    <div class="app-bar">
+      <GuideButton ref="guideBtn" />
+      <div class="app-bar-title">{{ itemName }}</div>
+      <div class="app-bar-spacer"></div>
+    </div>
     
     <!-- Error Message -->
     <div v-if="error" class="error-message" role="alert" aria-live="polite">
@@ -57,9 +62,7 @@
               <span class="item-name">{{ record.rightName }}</span>
               <span class="item-count">{{ record.rightCount }}</span>
             </div>
-            <div v-if="record.timestamp" class="trade-timestamp" aria-label="Trade timestamp">
-              {{ formatTimestamp(record.timestamp) }}
-            </div>
+
           </div>
         </div>
       </div>
@@ -82,11 +85,59 @@
   position: relative;
 }
 
+/* App Bar Styles */
+.app-bar {
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100vw;
+  min-height: 3.5rem;
+  background: #19181a;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 2px 16px #0004;
+  z-index: 100;
+  padding: 0.5rem 0.75rem;
+  box-sizing: border-box;
+}
+
+.app-bar-title {
+  flex: 1;
+  text-align: center;
+  font-weight: bold;
+  font-size: 1.2rem;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0.5rem;
+}
+
+.app-bar-spacer {
+  min-width: 2.5rem;
+  min-height: 2.5rem;
+  padding: 0.75rem;
+}
+
+/* AppBar specific GuideButton styles */
+.app-bar :deep(.guide-button) {
+  position: static;
+  top: auto;
+  left: auto;
+  z-index: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.5rem;
+  min-height: 2.5rem;
+}
+
 .content {
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 3rem 0 3rem 0;
+  padding: 2rem 0 3rem 0;
   box-sizing: border-box;
 }
 
@@ -295,8 +346,28 @@
 }
 
 @media (max-width: 480px) {
+  .app-bar {
+    min-height: 3rem;
+    padding: 0.375rem 0.5rem;
+  }
+  
+  .app-bar-title {
+    font-size: 1rem;
+  }
+  
+  .app-bar-spacer {
+    min-width: 2.25rem;
+    min-height: 2.25rem;
+    padding: 0.5rem;
+  }
+  
+  .app-bar :deep(.guide-button) {
+    min-width: 2.25rem;
+    min-height: 2.25rem;
+  }
+  
   .content {
-    padding: 2rem 0 2rem 0;
+    padding: 1.5rem 0 2rem 0;
   }
   
   .error-message {
@@ -345,8 +416,28 @@
 }
 
 @media (max-width: 300px) {
+  .app-bar {
+    min-height: 2.5rem;
+    padding: 0.25rem;
+  }
+  
+  .app-bar-title {
+    font-size: 0.9rem;
+  }
+  
+  .app-bar-spacer {
+    min-width: 1.75rem;
+    min-height: 1.75rem;
+    padding: 0.25rem;
+  }
+  
+  .app-bar :deep(.guide-button) {
+    min-width: 1.75rem;
+    min-height: 1.75rem;
+  }
+  
   .content {
-    padding: 2rem 0 0.8rem 0;
+    padding: 1rem 0 0.8rem 0;
   }
 
   .error-message {
@@ -427,8 +518,28 @@
 }
 
 @media (max-width: 200px) {
+  .app-bar {
+    min-height: 1.6rem;
+    padding: 0.17rem;
+  }
+  
+  .app-bar-title {
+    font-size: 0.8rem;
+  }
+  
+  .app-bar-spacer {
+    min-width: 1.17rem;
+    min-height: 1.17rem;
+    padding: 0.17rem;
+  }
+  
+  .app-bar :deep(.guide-button) {
+    min-width: 1.17rem;
+    min-height: 1.17rem;
+  }
+  
   .content {
-    padding: 1.33rem 0 0.53rem 0;
+    padding: 0.8rem 0 0.53rem 0;
   }
   
   .error-message {

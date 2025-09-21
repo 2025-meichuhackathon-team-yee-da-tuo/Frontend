@@ -84,14 +84,9 @@ const menuItems = computed(() => menuMap[route.query.view] || []);
 function handleMenuClick(item) {
   if (item.action === "logout") {
     handleLogout();
-  } else if(item.to){
+  } else if (item.to) {
     activeMenu.value = item.to.name || "";
-    
-    // 記錄導航歷史：從當前來源頁面通過menu導航到目標頁面
-    const fromPage = route.query.view || 'unknown';
-    navigationStore.recordNavigation(fromPage, item.to.name, true);
-    
-    router.push(item.to);
+    router.replace(item.to);
   }
 }
 

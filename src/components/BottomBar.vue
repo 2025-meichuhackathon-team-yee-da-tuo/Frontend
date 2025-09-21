@@ -39,35 +39,14 @@ export default {
       default: "",
     }
   },
-  setup(props) {
+  setup(props, { emit }) {
     const router = useRouter();
     const route = useRoute();
     const navigationStore = useNavigationStore();
     
-    function goBack() {
-      const currentPage = route.name;
-      
-      // 檢查是否通過menu導航到當前頁面
-      if (navigationStore.isViaMenu(currentPage)) {
-        // 如果是通過menu導航的，直接回到來源頁面
-        const previousPage = navigationStore.getPreviousPage(currentPage);
-        if (previousPage && previousPage !== 'unknown') {
-          // 清除當前頁面的導航歷史
-          navigationStore.clearHistory(currentPage);
-          // 導航到來源頁面
-          router.push({ name: previousPage });
-          return;
-        }
-      }
-      
-      // 如果沒有記錄的導航歷史，使用默認的返回行為
-      if (currentPage === 'menu') {
-        router.back();
-      } else if (currentPage === 'detailed_item') {
-        // 從詳細項目頁面返回到儀表板
-        router.push({ name: 'dashboard' });
-      } else {
-        // 其他頁面的默認行為
+    function goBack(event) {
+      emit('back', event);
+      if (!event.defaultPrevented) {
         router.back();
       }
     }

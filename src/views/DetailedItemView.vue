@@ -65,7 +65,7 @@
       </div>
     </div>
 
-    <BottomBar :showMenu="false" title="Item Details" currentView="detailedItem" />
+    <BottomBar :showMenu="false" title="Item Details" currentView="detailedItem" @back="goBack" />
   </div>
 </template>
 
@@ -676,8 +676,13 @@ export default {
       }
     },
     
-    goBack() {
-      this.$router.push('/dashboard');
+    goBack(event) {
+      if (event) event.preventDefault();
+      if (window.history.length > 1) {
+        this.$router.back();
+      } else {
+        this.$router.push('/dashboard');
+      }
     },
     
     goToTrade(record = null) {

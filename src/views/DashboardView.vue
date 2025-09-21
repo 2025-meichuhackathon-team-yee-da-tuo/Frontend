@@ -2,13 +2,23 @@
   <div class="select-bg">
     <div class="search-bar">
       <span class="search-icon"></span>
-      <input ref="searchInput" type="text" v-model="search" placeholder="search item..." />
+      <input 
+        ref="searchInput" 
+        type="text" 
+        v-model="search" 
+        placeholder="search item..." 
+        @keydown="handleSearchKeydown"
+      />
     </div>
     <div class="records">
       <div v-if="isLoading" class="recent-label">Loading...</div>
+      <div v-else-if="error" class="error-label">
+        {{ error }}
+        <button @click="retryFetch" class="retry-btn">Retry</button>
+      </div>
       <div v-else-if="filteredItems.length === 0" class="recent-label">No items found</div>
       <div v-else class="recent-label">
-        {{ search.trim() ? 'Search Results' : 'Most Traded Items' }} ({{ filteredItems.length }})
+        {{ search.trim() ? 'Search Results' : 'Popular Trading Items' }}
       </div>
       <div
         v-for="(item, idx) in filteredItems"
@@ -23,7 +33,6 @@
       >
         <div class="item-info">
           <span class="item-name">{{ item.name }}</span>
-          <span class="item-count" v-if="item.count">{{ item.count }} trades</span>
         </div>
       </div>
     </div>
@@ -103,6 +112,12 @@
     padding: 6px 10px;
     font-size: 0.88rem;
     outline: none;
+    
+    &:focus {
+      outline: 3px solid #FF9800 !important;
+      outline-offset: 2px;
+      box-shadow: 0 0 0 1px rgba(255, 152, 0, 0.3) !important;
+    }
   }
 }
 
@@ -112,6 +127,37 @@
   font-weight: 400;
   margin: 0.5rem 0 0.3rem 0.2rem;
   letter-spacing: 1px;
+}
+
+.error-label {
+  color: #ff4444;
+  font-size: 0.62rem;
+  font-weight: 400;
+  margin: 0.5rem 0 0.3rem 0.2rem;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.retry-btn {
+  background: #ff4444;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 0.6rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  
+  &:hover {
+    background: #ff6666;
+  }
+  
+  &:focus {
+    outline: 2px solid #FF9800;
+    outline-offset: 1px;
+  }
 }
 
 .records {
@@ -156,12 +202,6 @@
     font-weight: 600;
     color: #222;
   }
-  
-  .item-count {
-    font-size: 0.8rem;
-    font-weight: 400;
-    color: #666;
-  }
 }
 
 @media (max-width: 300px) {
@@ -200,10 +240,6 @@
     .item-name {
       font-size: 0.85rem;
     }
-    
-    .item-count {
-      font-size: 0.7rem;
-    }
   }
 }
 
@@ -241,10 +277,6 @@
     .item-name {
       font-size: 0.7rem;
     }
-    
-    .item-count {
-      font-size: 0.55rem;
-    }
   }
   
   .recent-label {
@@ -272,6 +304,7 @@ export default {
       items: [],
       defaultItems: [], // Store the sorted default items
       isLoading: false,
+      error: null,
       _debounceTimer: null
     };
   },
@@ -315,9 +348,15 @@ export default {
     
     this.fetchMostFrequentTrades();
   },
+  beforeDestroy() {
+    if (this._debounceTimer) {
+      clearTimeout(this._debounceTimer);
+    }
+  },
   methods: {
     async fetchMostFrequentTrades() {
       this.isLoading = true;
+      this.error = null;
 
       try {
         const response = await fetch('/api/trade/most-freq-trade?limit=-1', {
@@ -325,12 +364,18 @@ export default {
           headers: { 'Content-Type': 'application/json' }
         });
 
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
         const data = await response.json();
 
-        if (response.ok && data.trade_pairs && Array.isArray(data.trade_pairs)) {
+        // 修复：检查 trade_items 而不是 trade_pairs
+        if (data && data.trade_items && Array.isArray(data.trade_items)) {
           // Sort by count (descending) and store both in items and defaultItems
-          const sortedItems = data.trade_pairs
-            .sort((a, b) => b.count - a.count)
+          const sortedItems = data.trade_items
+            .filter(item => item.count > 0) // Filter out items with 0 trades
+            .sort((a, b) => (b.count || 0) - (a.count || 0))
             .map((item, idx) => ({
               id: idx + 1,
               name: item.item,
@@ -341,12 +386,22 @@ export default {
           this.items = [...sortedItems];
           this.defaultItems = [...sortedItems]; // Store sorted default items
         } else {
-          console.error("Failed to fetch most frequent trades:", data);
+          console.error("Invalid data structure received:", data);
+          this.error = "Invalid data received from server";
           this.items = [];
           this.defaultItems = [];
         }
       } catch (err) {
         console.error("Error fetching most frequent trades:", err);
+        
+        if (err.name === 'TypeError' && err.message.includes('fetch')) {
+          this.error = "Network error - check connection";
+        } else if (err.message.includes('HTTP error')) {
+          this.error = `Server error: ${err.message}`;
+        } else {
+          this.error = "Failed to load items";
+        }
+        
         this.items = [];
         this.defaultItems = [];
       } finally {
@@ -356,6 +411,7 @@ export default {
 
     async fetchFuzzyItems(keyword) {
       this.isLoading = true;
+      this.error = null;
 
       const params = new URLSearchParams({
         q: keyword
@@ -367,23 +423,36 @@ export default {
           headers: { "Content-Type": "application/json" }
         });
 
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
         const data = await response.json();
 
-        if (response.ok && Array.isArray(data)) {
+        if (Array.isArray(data)) {
           this.items = data.map((name, idx) => ({ 
             id: idx + 1, 
             name: name,
             count: null // No count data for search results
           }));
         } else {
-          console.error("Failed to fetch fuzzy search results:", data);
+          console.error("Invalid search results:", data);
           this.items = [];
         }
       } catch (err) {
         console.error("Error fetching fuzzy search results:", err);
+        this.error = "Search failed - please try again";
         this.items = [];
       } finally {
         this.isLoading = false;
+      }
+    },
+
+    retryFetch() {
+      if (this.search.trim()) {
+        this.fetchFuzzyItems(this.search.trim());
+      } else {
+        this.fetchMostFrequentTrades();
       }
     },
 
@@ -413,11 +482,29 @@ export default {
       }, 50);
     },
 
+    handleSearchKeydown(e) {
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        if (this.$refs.rows && this.$refs.rows[0]) {
+          this.$refs.rows[0].focus();
+        }
+      }
+      
+      if (e.key === "Escape") {
+        e.preventDefault();
+        this.search = "";
+        if (this.$refs.searchInput) {
+          this.$refs.searchInput.blur();
+        }
+      }
+    },
+
     handleRowKeydown(e, idx) {
       const keys = [
         "0","1","2","3","4","5","6","7","8","9","*","#",
         ..."abcdefghijklmnopqrstuvwxyz",
-        ..."ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        ..."ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+        " "
       ];
 
       if (keys.includes(e.key)) {
@@ -459,6 +546,22 @@ export default {
       if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
         this.selectItem(this.filteredItems[idx]);
+      }
+
+      if (e.key === "Backspace" || e.key === "Delete") {
+        e.preventDefault();
+        this.search = this.search.slice(0, -1);
+        if (this.$refs.searchInput) {
+          this.$refs.searchInput.focus();
+        }
+      }
+
+      if (e.key === "Escape") {
+        e.preventDefault();
+        this.search = "";
+        if (this.$refs.searchInput) {
+          this.$refs.searchInput.focus();
+        }
       }
     },
     goItemDetail(name) {

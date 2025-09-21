@@ -61,7 +61,8 @@ export default {
       }
       
       // 如果沒有記錄的導航歷史，使用默認的返回行為
-      router.back();
+      if (currentPage == 'menu')
+        router.back();
     }
     
     function goToMenu() {

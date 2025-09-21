@@ -1,13 +1,11 @@
 <template>
   <div class="select-bg" role="main" aria-label="Item Details Page">
-    <!-- App Bar -->
     <div class="app-bar">
       <GuideButton ref="guideBtn" />
       <div class="app-bar-title">{{ itemName }}</div>
       <div class="app-bar-spacer"></div>
     </div>
     
-    <!-- Error Message -->
     <div v-if="error" class="error-message" role="alert" aria-live="polite">
       <div class="error-content">
         <span class="error-icon">⚠️</span>
@@ -18,7 +16,6 @@
       </div>
     </div>
     
-    <!-- Item Trade Pie Chart -->
     <div v-if="!error && itemName" class="pie-chart-container">
       <ItemTradePie :item="itemName" api-base="/api/trade" :size="140" />
     </div>
@@ -29,13 +26,11 @@
           {{ itemName }} Trading History
         </div>
         
-        <!-- Loading State -->
         <div v-if="isLoading" class="loading-container" role="status" aria-live="polite">
           <div class="loading-spinner"></div>
           <div class="loading-message">Loading trading history...</div>
         </div>
         
-        <!-- Empty State -->
         <div v-else-if="tradeHistory.length === 0 && !isLoading" class="no-records" role="status">
           <div class="no-records-icon">📊</div>
           <div class="no-records-text">No trading records found for {{ itemName }}</div>
@@ -44,7 +39,6 @@
           </button>
         </div>
         
-        <!-- Trade Records List -->
         <div v-else class="records-list" role="list">
           <div 
             v-for="(record, index) in tradeHistory" 
@@ -85,7 +79,6 @@
   position: relative;
 }
 
-/* App Bar Styles */
 .app-bar {
   position: sticky;
   top: 0;
@@ -288,7 +281,6 @@
   }
 }
 
-/* Records List */
 .records-list {
   display: flex;
   flex-direction: column;

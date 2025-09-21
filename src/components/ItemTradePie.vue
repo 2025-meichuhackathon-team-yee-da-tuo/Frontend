@@ -14,9 +14,7 @@
             class="pie"
         >
             <g transform="translate(100,100)">
-            <!-- 沒資料就不畫任何切片 -->
             <template v-for="(seg, i) in segments" :key="i">
-                <!-- 只有一種：用 circle 畫滿 -->
                 <circle
                 v-if="seg.fullCircle"
                 :r="95"
@@ -24,7 +22,6 @@
                 cy="0"
                 :fill="seg.color"
                 />
-                <!-- 兩種以上：照舊用 path -->
                 <path
                 v-else
                 class="slice"
@@ -48,7 +45,6 @@
         </ul>
         </div>
 
-        <!-- 空狀態 -->
         <div v-if="!loading && !error && segments.length === 0" class="empty">
         尚無交易資料
         </div>
@@ -58,12 +54,7 @@
 <script setup>
 import { onMounted, watch, ref, computed } from 'vue'
 
-/**
- * Props
- * - item: 目標物品名稱（必填）
- * - apiBase: 後端 trade API base（依你的部署調整，預設 /api/trade）
- * - size: 圓餅圖大小（px）
- */
+
 const props = defineProps({
   item: { type: String, required: true },
   apiBase: { type: String, default: '/api/trade' },
@@ -76,9 +67,7 @@ const loading = ref(false)
 const error = ref('')
 const trades = ref([])
 
-// 計算實際大小，支持 CSS 變量覆蓋
 const computedSize = computed(() => {
-  // 檢查是否有 CSS 變量定義的大小
   if (typeof document !== 'undefined') {
     const root = document.documentElement
     const cssVar = getComputedStyle(root).getPropertyValue('--pie-size')
@@ -92,10 +81,6 @@ const computedSize = computed(() => {
   return props.size
 })
 
-/**
- * 取得含該物品的所有交易
- * 依據 trade.py 的 /trade-history（有 target 參數時會用以 item 為集合，資料中對手物品在 item_b）
- */
 async function fetchTrades() {
   loading.value = true
   error.value = ''
@@ -114,11 +99,7 @@ async function fetchTrades() {
   }
 }
 
-/**
- * 聚合「與該物品交易的其它物品」之次數
- * 由於 target 集合中每筆都以該 item 為 item_a（原始或 swapped），
- * 「對手物品」即為 item_b。
- */
+
 const counts = computed(() => {
   const m = new Map()
   for (const t of trades.value) {
@@ -139,9 +120,6 @@ const topN = computed(() => {
 })
 
 
-/**
- * 繪製圓餅圖（純 SVG，不依賴外部圖表套件）
- */
 const colors = [
   '#5B8FF9', '#61DDAA', '#65789B', '#F6BD16', '#7262FD',
   '#78D3F8', '#F6903D', '#9661BC'
@@ -166,9 +144,8 @@ function arcPath(cx, cy, r, startAngle, endAngle) {
 
 const segments = computed(() => {
   const total = topN.value.reduce((s, [, c]) => s + c, 0)
-  if (total === 0) return [] // 無資料，讓 template 顯示空狀態
+  if (total === 0) return []
 
-  // 若只有一個切片：用 fullCircle 特判，template 會畫 <circle>
   if (topN.value.length === 1) {
     const [name, count] = topN.value[0]
     return [{
@@ -177,11 +154,9 @@ const segments = computed(() => {
       percent: 1,
       color: colors[0],
       fullCircle: true,
-      path: '', // 不用
+      path: '',
     }]
   }
-
-  // 一般情況（2～N 個切片）
   let acc = 0
   const r = 95
   return topN.value.map(([name, count], i) => {

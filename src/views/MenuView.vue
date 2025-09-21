@@ -169,9 +169,9 @@ async function handleLogout() {
   transition: all 0.2s ease;
   
   &:focus {
-    outline: 3px solid #FF9800 !important; /* 橙色邊框，與圖片中的效果一致 */
-    outline-offset: 2px; /* 邊框與按鈕的間距 */
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 152, 0, 0.3) !important; /* 保持原有陰影並添加focus效果 */
+    outline: 3px solid #FF9800 !important;
+    outline-offset: 2px; 
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 152, 0, 0.3) !important;
   }
   
   &:hover {
@@ -179,7 +179,7 @@ async function handleLogout() {
   }
   
   &:hover:focus {
-    background: #2a2a2d; /* hover + focus 時保持hover的背景色 */
+    background: #2a2a2d;
   }
 }
 
@@ -190,7 +190,7 @@ async function handleLogout() {
 }
 
 .menu-list-item.active .menu-btn:focus {
-  outline: 3px solid #FF9800 !important; /* 保持一致的橙色focus樣式 */
+  outline: 3px solid #FF9800 !important;
   outline-offset: 2px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 152, 0, 0.3) !important;
 }
@@ -209,7 +209,7 @@ async function handleLogout() {
   transition: all 0.2s ease;
   
   &:focus {
-    outline: 3px solid #FF9800 !important; /* 與其他按鈕保持一致的focus樣式 */
+    outline: 3px solid #FF9800 !important;
     outline-offset: 2px;
     box-shadow: 0 0 0 1px rgba(255, 152, 0, 0.3) !important;
     opacity: 1;
@@ -240,7 +240,7 @@ async function handleLogout() {
   }
   
   .menu-btn:focus {
-    outline-width: 2px !important; /* 小屏幕上使用較細的邊框 */
+    outline-width: 2px !important;
     outline-offset: 1px;
   }
 }
@@ -259,7 +259,7 @@ async function handleLogout() {
   }
   
   .menu-btn:focus {
-    outline-width: 2px !important; /* 超小屏幕上也使用較細的邊框 */
+    outline-width: 2px !important;
     outline-offset: 1px;
   }
 }

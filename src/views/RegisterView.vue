@@ -68,14 +68,13 @@ const router = useRouter();
 const form = ref({ email: "", password: "", confirm: "" });
 const isLoading = ref(false);
 const errors = ref({ email: '', password: '', confirm: '' });
-const guideBtn = ref(null);  // Ref for GuideButton
+const guideBtn = ref(null); 
 
 watch(() => form.value.email, () => { errors.value.email = '' });
 watch(() => form.value.password, () => { errors.value.password = '' });
 watch(() => form.value.confirm, () => { errors.value.confirm = '' });
 
 onMounted(() => {
-  // Auto focus on GuideButton after DOM render
   nextTick(() => {
     if (guideBtn.value && guideBtn.value.$el) {
       guideBtn.value.$el.focus();
@@ -176,7 +175,6 @@ async function onRegister() {
   justify-content: center;
   align-items: center;
   padding: 1rem;
-  /* margin-top: 1rem; */
 }
 
 .auth-box {
@@ -225,9 +223,9 @@ async function onRegister() {
   transition: all 0.2s ease;
   
   &:focus {
-    outline: 3px solid #FF9800 !important; /* 橘色邊框，寬度3px */
-    outline-offset: 2px; /* 邊框與元素的間距 */
-    box-shadow: 0 0 0 1px rgba(255, 152, 0, 0.3) !important; /* 統一陰影效果 */
+    outline: 3px solid #FF9800 !important;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 1px rgba(255, 152, 0, 0.3) !important; 
   }
   
   &.error {

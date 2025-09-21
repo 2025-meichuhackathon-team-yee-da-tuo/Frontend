@@ -70,7 +70,6 @@ function checkLoginStatus() {
 onMounted(() => {
   checkLoginStatus()
 
-  // Auto focus on GuideButton after DOM render
   nextTick(() => {
     if (guideBtn.value && guideBtn.value.$el) {
       guideBtn.value.$el.focus();
@@ -120,9 +119,9 @@ async function submitLogin() {
     general: ''
   }
 
-  if (!email.value) errors.value.email = '請填寫信箱'
-  if (!password.value) errors.value.password = '請填寫密碼'
-  
+  if (!email.value) errors.value.email = 'Please enter your email'
+  if (!password.value) errors.value.password = 'Please enter your password'
+
   if (errors.value.email || errors.value.password) return
 
   isLoading.value = true
@@ -147,17 +146,17 @@ async function submitLogin() {
     } else {
       switch (data.status) {
         case 1:
-          errors.value.general = '登入失敗，請檢查您的信箱和密碼'
+          errors.value.general = 'Login failed, please try again later'
           break
         case 2:
-          errors.value.general = '信箱或密碼錯誤'
+          errors.value.general = 'Email or password is incorrect'
           break
         default:
-          errors.value.general = '登入失敗，請稍後再試'
+          errors.value.general = 'Login failed, please try again later'
       }
     }
   } catch (error) {
-    errors.value.general = '網路錯誤，請稍後再試'
+    errors.value.general = 'Network error, please try again later'
   } finally {
     isLoading.value = false
   }
@@ -209,9 +208,9 @@ async function submitLogin() {
   transition: all 0.2s ease;
   
   &:focus {
-    outline: 3px solid #FF9800 !important; /* 橘色邊框，寬度3px */
-    outline-offset: 2px; /* 邊框與元素的間距 */
-    box-shadow: 0 0 0 1px rgba(255, 152, 0, 0.3) !important; /* 統一陰影效果 */
+    outline: 3px solid #FF9800 !important;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 1px rgba(255, 152, 0, 0.3) !important;
   }
   
   &::placeholder {

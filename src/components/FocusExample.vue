@@ -1,8 +1,7 @@
-<template>
+<!-- <template>
   <div class="focus-example">
     <h2>Focus樣式示例</h2>
     
-    <!-- 基礎樣式示例 -->
     <div class="example-section">
       <h3>基礎Focus樣式</h3>
       <button class="focus-primary">基礎按鈕</button>
@@ -10,7 +9,6 @@
       <a href="#" class="focus-link">鏈接</a>
     </div>
     
-    <!-- 狀態樣式示例 -->
     <div class="example-section">
       <h3>狀態Focus樣式</h3>
       <button class="focus-success">成功按鈕</button>
@@ -19,14 +17,12 @@
       <button class="focus-disabled" disabled>禁用按鈕</button>
     </div>
     
-    <!-- 特殊效果示例 -->
     <div class="example-section">
       <h3>特殊效果</h3>
       <button class="focus-glow">發光效果</button>
       <button class="focus-none">無Focus樣式</button>
     </div>
     
-    <!-- 自定義顏色示例 -->
     <div class="example-section">
       <h3>自定義顏色</h3>
       <button 
@@ -46,7 +42,6 @@
 </template>
 
 <script setup>
-// 這個組件展示各種focus樣式的使用
 </script>
 
 <style scoped>
@@ -99,4 +94,4 @@ button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
-</style>
+</style> -->

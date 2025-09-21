@@ -5,6 +5,7 @@
       class="btm-bar-btn"
       aria-label="page selection"
       @click="goToMenu"
+      tabindex="-1"
     >
       <img src="@/assets/Icons/hamburger-bar.svg" alt="page selection" />
     </span>

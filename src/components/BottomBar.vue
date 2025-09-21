@@ -1,13 +1,13 @@
 <template>
   <div class="btm-bar">
-    <router-link
+    <span
       v-if="showMenu"
       class="btm-bar-btn"
       aria-label="page selection"
-      tabindex="-1"
+      @click="goToMenu"
     >
       <img src="@/assets/Icons/hamburger-bar.svg" alt="page selection" />
-    </router-link>
+    </span>
     
     <div v-else class="btm-bar-spacer"></div>
 
@@ -20,8 +20,9 @@
 </template>
 
 <script>
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { onMounted, onUnmounted } from 'vue'
+import { useNavigationStore } from '@/stores/navigation'
 
 export default {
   props: {
@@ -38,24 +39,37 @@ export default {
       default: "",
     }
   },
-  setup(props) {
+  setup(props, { emit }) {
     const router = useRouter();
+    const route = useRoute();
+    const navigationStore = useNavigationStore();
     
-    function goBack() {
-      router.back();
-    }
-    function handleEsc(e) {
-      if (e.key === 'Escape' && props.showMenu) {
-        router.push({ name: 'menu', query: { view: props.currentView } })
+    function goBack(event) {
+      emit('back', event);
+      if (!event.defaultPrevented) {
+        router.back();
       }
     }
+    
+    function goToMenu() {
+      router.push({ name: 'menu', query: { view: props.currentView } })
+    }
+    
+    function handleEsc(e) {
+      if (e.key === 'Escape' && props.showMenu) {
+        goToMenu()
+      }
+    }
+    
     onMounted(() => {
       document.addEventListener('keydown', handleEsc)
     })
+    
     onUnmounted(() => {
       document.removeEventListener('keydown', handleEsc)
     })
-    return { goBack }
+    
+    return { goBack, goToMenu }
   }
 };
 </script>

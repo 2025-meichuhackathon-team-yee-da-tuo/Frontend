@@ -209,7 +209,7 @@ async function submitTrade() {
         desiredItemName.value = ""
         desiredItemQty.value = null
         recommendRate.value = null
-        router.push({ name: 'menu', query: { view: 'history' } })
+        router.push({ name: 'trade'})
       }
     } else {
       errors.value.general = 'Failed to create trade, please try again later'

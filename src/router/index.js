@@ -8,6 +8,7 @@ import GlobalHistoryView from "@/views/GlobalHistoryView.vue";
 import SelectItemView from "@/views/SelectItemView.vue";
 import DashboardView from "@/views/DashboardView.vue";
 import GuideView from "@/views/GuideView.vue";
+import DetailedItemView from "@/views/DetailedItemView.vue";
 const routes = [
   {
     path: "/",
@@ -58,6 +59,11 @@ const routes = [
     name: "dashboard",
     component: DashboardView,
   },
+{
+  path: "/dashboard/:item",
+  name: "detailed_item",
+  component: DetailedItemView,
+},
 ];
 
 const router = createRouter({

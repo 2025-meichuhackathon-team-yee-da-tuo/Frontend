@@ -24,10 +24,12 @@ import BottomBar from "@/components/BottomBar.vue";
 import { useRoute, useRouter } from "vue-router";
 import { computed, ref, onMounted, nextTick } from "vue";
 import { useUserStore } from "@/stores/user";
+import { useNavigationStore } from "@/stores/navigation";
 
 const router = useRouter();
 const route = useRoute();
 const userStore = useUserStore();
+const navigationStore = useNavigationStore();
 
 const activeMenu = ref("");
 
@@ -67,7 +69,19 @@ const menuMap = {
     {label: "User", to: {name: "user_history"}},
     {label: "Trade", to: {name: "trade"}},
     { label: "Logout", action: "logout" },
-  ]
+  ],
+  dashboard: [
+    { label: "Dashboard", to: { name: "dashboard" } },
+    { label: "Trade", to: { name: "trade" } },
+    { label: "History", to: { name: "user_history" } },
+    { label: "Logout", action: "logout" },
+  ],
+  detailedItem: [
+    { label: "Dashboard", to: { name: "dashboard" } },
+    { label: "Trade", to: { name: "trade" } },
+    { label: "History", to: { name: "user_history" } },
+    { label: "Logout", action: "logout" },
+  ],
 };
 
 const menuItems = computed(() => menuMap[route.query.view] || []);
@@ -75,9 +89,9 @@ const menuItems = computed(() => menuMap[route.query.view] || []);
 function handleMenuClick(item) {
   if (item.action === "logout") {
     handleLogout();
-  } else if(item.to){
+  } else if (item.to) {
     activeMenu.value = item.to.name || "";
-    router.push(item.to);
+    router.replace(item.to);
   }
 }
 

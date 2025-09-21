@@ -47,10 +47,10 @@ const isRateInvalid = computed(() => {
 
 function checkAuthStatus() {
   userStore.restoreUser()
-  // if (!userStore.isLoggedIn || !userStore.email) {
-  //   router.replace({ name: 'login' })
-  //   return false
-  // }
+  if (!userStore.isLoggedIn || !userStore.email) {
+    router.replace({ name: 'login' })
+    return false
+  }
   return true
 }
 

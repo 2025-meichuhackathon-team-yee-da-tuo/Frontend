@@ -192,7 +192,7 @@
   .item-info {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;  
     gap: 4px;
     flex: 1;
   }
@@ -205,34 +205,6 @@
 }
 
 @media (max-width: 300px) {
-  .search-bar {
-    padding: 0.8rem 0.6rem 0.6rem 0.6rem;
-    
-    .search-icon {
-      width: 10px;
-      height: 10px;
-      
-      &::before {
-        width: 6px;
-        height: 6px;
-        left: 1px;
-        top: 1px;
-      }
-      
-      &::after {
-        width: 3px;
-        height: 1px;
-        bottom: 1px;
-        right: 1px;
-      }
-    }
-    
-    input {
-      padding: 5px 8px;
-      font-size: 0.75rem;
-    }
-  }
-  
   .record-row {
     padding: 8px 12px;
     font-size: 0.85rem;
@@ -244,6 +216,10 @@
 }
 
 @media (max-width: 200px) {
+  .select-bg {
+    font-size: 0.49rem;
+    padding: 0vh 0vw 0vh 0vw;
+  }
   .search-bar {
     padding: 0.5rem 0.4rem;
     
@@ -302,7 +278,7 @@ export default {
     return {
       search: "",
       items: [],
-      defaultItems: [], // Store the sorted default items
+      defaultItems: [],
       isLoading: false,
       error: null,
       _debounceTimer: null
@@ -320,7 +296,6 @@ export default {
         const keyword = (newVal || "").trim();
         
         if (!keyword) {
-          // Return to default items (already sorted by count)
           if (this.defaultItems.length > 0) {
             this.items = [...this.defaultItems];
           } else {
@@ -334,7 +309,6 @@ export default {
     }
   },
   mounted() {
-    // Check if we're in item detail view
     if (this.itemName || this.$route.params.itemName) {
       console.log('Item detail view for:', this.itemName || this.$route.params.itemName);
       return;
@@ -370,11 +344,9 @@ export default {
 
         const data = await response.json();
 
-        // 修复：检查 trade_items 而不是 trade_pairs
         if (data && data.trade_items && Array.isArray(data.trade_items)) {
-          // Sort by count (descending) and store both in items and defaultItems
           const sortedItems = data.trade_items
-            .filter(item => item.count > 0) // Filter out items with 0 trades
+            .filter(item => item.count > 0) 
             .sort((a, b) => (b.count || 0) - (a.count || 0))
             .map((item, idx) => ({
               id: idx + 1,
@@ -384,7 +356,7 @@ export default {
             }));
           
           this.items = [...sortedItems];
-          this.defaultItems = [...sortedItems]; // Store sorted default items
+          this.defaultItems = [...sortedItems]; 
         } else {
           console.error("Invalid data structure received:", data);
           this.error = "Invalid data received from server";
@@ -433,7 +405,7 @@ export default {
           this.items = data.map((name, idx) => ({ 
             id: idx + 1, 
             name: name,
-            count: null // No count data for search results
+            count: null 
           }));
         } else {
           console.error("Invalid search results:", data);
@@ -566,7 +538,6 @@ export default {
     },
     goItemDetail(name) {
       if (!name) return
-      // 對應 router 中的命名路由 'item_detail' 與參數 :name
       this.$router.push({ name: 'item_detail', params: { name } })
     },
   }

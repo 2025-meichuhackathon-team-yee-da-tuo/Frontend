@@ -142,9 +142,9 @@
   transition: all 0.2s ease;
   
   &:focus {
-    outline: 3px solid #FF9800 !important; /* 橘色邊框，寬度3px */
-    outline-offset: 2px; /* 邊框與元素的間距 */
-    box-shadow: 0 0 0 1px rgba(255, 152, 0, 0.3) !important; /* 統一陰影效果 */
+    outline: 3px solid #FF9800 !important; 
+    outline-offset: 2px; 
+    box-shadow: 0 0 0 1px rgba(255, 152, 0, 0.3) !important;
   }
 }
 
@@ -205,29 +205,24 @@ export default {
     return {
       search: "",
       hoverItem: null,
-      // 原本硬編的 items 移除，改成動態載入
       items: [],
-      recentItems: [], // 最近交易物品
+      recentItems: [], 
       isLoading: false,
       _debounceTimer: null
     };
   },
   computed: {
-    // 根據搜尋狀態決定顯示的項目
     filteredItems() {
       const searchTerm = (this.search || "").trim();
       
-      // 如果有搜尋文字，顯示搜尋結果
       if (searchTerm) {
         return this.items;
       }
       
-      // 如果沒有搜尋文字，顯示最近交易物品
       return this.recentItems;
     }
   },
   watch: {
-    // 監聽搜尋框輸入，做簡單 debounce 以減少請求
     search(newVal) {
       if (this._debounceTimer) clearTimeout(this._debounceTimer);
       this._debounceTimer = setTimeout(() => {
@@ -241,27 +236,22 @@ export default {
     }
   },
   mounted() {
-    // 頁面載入時自動 focus 到搜尋框
     this.$nextTick(() => {
       if (this.$refs.searchInput) {
         this.$refs.searchInput.focus();
       }
     });
     
-    // 載入最近交易物品
     this.fetchRecentItems();
   },
   unmounted() {
-    // 清理定時器
     if (this._debounceTimer) {
       clearTimeout(this._debounceTimer);
     }
   },
   methods: {
-    // 獲取最近交易物品
     async fetchRecentItems() {
       try {
-        // 從 userStore 獲取用戶信息
         const userStore = useUserStore();
         userStore.restoreUser();
         const userEmail = userStore.email;
@@ -274,7 +264,7 @@ export default {
         
         const params = new URLSearchParams({
           user: userEmail,
-          limit: -1 // 獲取所有最近物品
+          limit: -1 
         });
 
         const resp = await fetch(`/api/trade/recent-items?${params.toString()}`, {
@@ -286,7 +276,6 @@ export default {
           const data = await resp.json();
           console.log('Recent items API response:', data);
           
-          // 根據實際 API 響應格式處理數據
           if (data.recent_items && Array.isArray(data.recent_items)) {
             this.recentItems = data.recent_items.map((itemObj, i) => ({ 
               id: `recent_${i + 1}`, 
@@ -308,7 +297,6 @@ export default {
     async fetchFuzzyItems(keyword) {
       this.isLoading = true;
 
-      // 參考 UserHistoryView.vue 的 GET 寫法
       const params = new URLSearchParams({
         q: keyword
       });
@@ -322,14 +310,11 @@ export default {
         const norm = s => (s ?? "").trim().toLowerCase();
         const hasExact = data.some(name => norm(name) === norm(keyword));
 
-        // 合併：若沒有精確匹配，將 keyword 放最前；並做去重（以正規化後的字串為 key）
         const merged = hasExact ? data : [keyword, ...data];
 
-        // 轉回你原本使用的 { id, name } 結構
         this.items = merged.map((name, i) => ({ id: `search_${i + 1}`, name }));
       } catch (err) {
         console.error("Error fetching fuzzy items:", err);
-        // 即使失敗，也把輸入字放第一個，維持體驗
         this.items = keyword ? [{ id: 'search_1', name: keyword }] : [];
       } finally {
         this.isLoading = false;
@@ -352,9 +337,8 @@ export default {
         const element = e.target;
         const elementRect = element.getBoundingClientRect();
         const viewportHeight = window.innerHeight;
-        const searchBarHeight = 35; // 根據你的 BottomBar 高度調整
-        const bottomBarHeight = 80; // 根據你的 BottomBar 高度調整
-        // print elementRect.top
+        const searchBarHeight = 35;
+        const bottomBarHeight = 80;
         console.log('elementRect.top:', elementRect.top);
         console.log('searchBarHeight:', searchBarHeight);
         if (elementRect.bottom > viewportHeight - bottomBarHeight) {
@@ -389,13 +373,11 @@ export default {
           e.preventDefault();
         }
       }
-      // this.items[2] = {id: 3, name: e.key} // debug only
       if (e.key === "ArrowUp") {
         e.preventDefault();
         if (idx > 0) {
           this.$refs.rows[idx - 1].focus();
         } else {
-          // focus 回 search bar
           if (this.$refs.searchInput && this.$refs.searchInput.focus) {
             this.$refs.searchInput.focus();
           }

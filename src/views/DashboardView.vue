@@ -460,7 +460,12 @@ export default {
         e.preventDefault();
         this.selectItem(this.filteredItems[idx]);
       }
-    }
+    },
+    goItemDetail(name) {
+      if (!name) return
+      // 對應 router 中的命名路由 'item_detail' 與參數 :name
+      this.$router.push({ name: 'item_detail', params: { name } })
+    },
   }
 };
 </script>

@@ -1,20 +1,16 @@
 <template>
-  <div class="history-bg">
-    <GuideButton ref="guideBtn" />
-    
-    <div class="history-content">
-      <div class="search-bar">
-        <span class="search-icon"></span>
-        <input type="text" v-model="search" placeholder="search record..." />
-      </div>
-      <div class="records">
-        <div v-if="isLoading" class="loading-message">Loading...</div>
-        <div v-else-if="filteredRecords.length === 0 && !isLoading" class="no-records">No transaction records found</div>
-        <div v-else v-for="item in filteredRecords" :key="item.id" class="record-row">
-          <span class="item-left">{{ item.leftName }} {{ item.leftCount }}</span>
-          <span class="exchange-arrow">⇄</span>
-          <span class="item-right">{{ item.rightName }} {{ item.rightCount }}</span>
-        </div>
+  <div class="select-bg">
+    <div class="search-bar">
+      <span class="search-icon"></span>
+      <input type="text" v-model="search" placeholder="search record..." />
+    </div>
+    <div class="records">
+      <div v-if="isLoading" class="recent-label">Loading...</div>
+      <div v-else-if="filteredRecords.length === 0 && !isLoading" class="recent-label">No transaction records found</div>
+      <div v-else v-for="item in filteredRecords" :key="item.id" class="record-row">
+        <span class="item-left">{{ item.leftName }} {{ item.leftCount }}</span>
+        <span class="exchange-arrow">⇄</span>
+        <span class="item-right">{{ item.rightName }} {{ item.rightCount }}</span>
       </div>
     </div>
     
@@ -28,8 +24,7 @@
 
 <script setup>
 import BottomBar from "@/components/BottomBar.vue"
-import GuideButton from "@/components/GuideButton.vue"
-import { ref, computed, onMounted, nextTick } from "vue"
+import { ref, computed, onMounted } from "vue"
 import { useRouter } from "vue-router"
 import { useUserStore } from "@/stores/user"
 
@@ -38,7 +33,6 @@ const userStore = useUserStore()
 const search = ref("")
 const records = ref([])
 const isLoading = ref(false)
-const guideBtn = ref(null)  // Ref for GuideButton
 
 onMounted(() => {
   userStore.restoreUser()
@@ -47,13 +41,6 @@ onMounted(() => {
     return
   }
   fetchTradeHistory()
-
-  // Auto focus on GuideButton after DOM render
-  nextTick(() => {
-    if (guideBtn.value && guideBtn.value.$el) {
-      guideBtn.value.$el.focus();
-    }
-  });
 })
 
 const filteredRecords = computed(() => {
@@ -110,53 +97,49 @@ async function fetchTradeHistory() {
 </script>
 
 <style lang="scss" scoped>
-.history-bg {
-  width: 100vw;
+.select-bg {
+  width: 100%;
+  max-width: 100vw;
   min-height: 100vh;
-  background: #2d2d2d;
+  background: #222;
+  color: #fff;
   display: flex;
-  flex-direction: column; 
+  flex-direction: column;
   box-sizing: border-box;
   position: relative;
 }
 
-.history-content {
-  flex: 1; 
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 3rem 0.7rem 1.2rem 0.7rem;
-  box-sizing: border-box;
-  overflow-y: auto;
-}
-
 .search-bar {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   display: flex;
   align-items: center;
-  width: 90%;
-  background: rgba(255, 255, 255, 0.1);
   border-radius: 12px;
-  padding: 10px 16px;
-  margin-bottom: 1rem;
+  padding: 1rem 1rem 0.8rem 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 101;
+  background: #222;
   
   .search-icon {
     flex: 0 0 auto;  
     display: inline-block;
-    width: 24px;
-    height: 24px;
+    width: 13px;
+    height: 13px;
     position: relative;
-    margin-right: 15px;
+    margin-right: 5px;
     
     &::before {
       content: '';
       display: block;
-      width: 16px;
-      height: 16px;
-      border: 2px solid #fff;
+      width: 8px;
+      height: 8px;
+      border: 1px solid #fff;
       border-radius: 50%;
       position: absolute;
-      left: 2px;
-      top: 2px;
+      left: 1px;
+      top: 1px;
       box-sizing: border-box;
       background: transparent;
     }
@@ -164,57 +147,60 @@ async function fetchTradeHistory() {
     &::after {
       content: '';
       display: block;
-      width: 8px;
-      height: 2px;
+      width: 4px;
+      height: 1px;
       border-radius: 2px;
       background: #fff;
       position: absolute;
-      bottom: 5px;
-      right: 2px;
+      bottom: 2.7px;
+      right: 2.7px;
       transform: rotate(45deg);
     }
   }
   
   input {
+    flex: 1 1 0;  
     width: 100%;
-    flex: 1;
+    min-width: 0;
     background: #fff;
     border: 0;
-    border-radius: 8px;
-    padding: 8px 12px;
-    font-size: 1.1rem;
+    border-radius: 4px;
+    padding: 6px 10px;
+    font-size: 0.88rem;
     outline: none;
-    color: #222;
     
-    &::placeholder {
-      color: #999;
+    &:focus {
+      outline: 3px solid #FF9800 !important;
+      outline-offset: 2px;
+      box-shadow: 0 0 0 1px rgba(255, 152, 0, 0.3) !important;
     }
   }
 }
 
-.records {
-  width: 90%;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
+.recent-label {
+  color: #bbb;
+  font-size: 0.62rem;
+  font-weight: 400;
+  margin: 0.5rem 0 0.3rem 0.2rem;
+  letter-spacing: 1px;
 }
 
-.loading-message, .no-records {
-  text-align: center;
-  color: #ccc;
-  font-size: 1.1rem;
-  padding: 2rem;
+.records {
+  width: 90%;
+  margin: 0px auto;
+  padding-bottom: 4rem;
 }
 
 .record-row {
   background: #fff;
-  border-radius: 11px;
+  color: #222;
+  border-radius: 8px;
   display: flex;
   align-items: center;
+  margin-bottom: 12px;
   padding: 12px 24px;
-  font-size: 1.35rem;
+  font-size: 1rem;
   font-weight: 600;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   
   .item-left, .item-right {
     flex: 1;
@@ -224,144 +210,59 @@ async function fetchTradeHistory() {
   
   .exchange-arrow {
     flex: 0 0 50px;
-    font-size: 2.1rem;
-    -webkit-text-stroke: 1px #222; 
-    color: #222;
+    font-size: 1.2rem;
+    color: #666;
     text-align: center;
   }
 }
 
 @media (max-width: 300px) {
-  .history-content {
-    padding: 2rem 0.4rem 0.8rem 0.4rem;
-  }
-  
-  .search-bar {
-    padding: 8px 12px;
-    
-    .search-icon {
-      width: 18px;
-      height: 18px;
-      margin-right: 8px;
-      
-      &::before {
-        width: 12px;
-        height: 12px;
-        border: 1.5px solid #fff;
-        left: 1px;
-        top: 1px;
-      }
-      
-      &::after {
-        width: 6px;
-        height: 1.5px;
-        bottom: 2px;
-        right: 2px;
-      }
-    }
-    
-    input {
-      width: 100%;
-      padding: 6px 10px;
-      border-radius: 6px;
-      font-size: 0.9rem;
-    }
-  }
-  
-  .records {
-    gap: 9px;
-  }
-  
   .record-row {
-    border-radius: 8px;
     padding: 8px 12px;
-    font-size: 1rem;
-    
-    .exchange-arrow {
-      flex: 0 0 40px;
-      font-size: 1.6rem;
-      -webkit-text-stroke: 0.5px #222;
-    }
-  }
-  
-  .loading-message, .no-records {
-    font-size: 0.9rem;
-    padding: 1.5rem;
+    font-size: 0.85rem;
   }
 }
 
 @media (max-width: 200px) {
-  .history-content {
-    padding: 1.33rem 0.2rem 0.53rem 0.2rem;
+  .select-bg {
+    font-size: 0.49rem;
+    padding: 0vh 0vw 0vh 0vw;
   }
-  
   .search-bar {
-    width: 95%;
-    padding: 0.25rem 0.3rem; 
-    border-radius: 0.5rem;
-    margin-bottom: 0.5rem;
+    padding: 0.5rem 0.4rem;
     
     .search-icon {
-      width: 10px;
-      height: 10px;
-      margin-right: 0.2rem;
+      width: 8px;
+      height: 8px;
+      margin-right: 3px;
       
       &::before {
-        width: 6px;
-        height: 6px;
-        border: 0.5px solid #fff;
-        left: 1px;
-        top: 1px;
+        width: 5px;
+        height: 5px;
       }
       
       &::after {
-        width: 3px;
-        height: 0.5px;
-        bottom: 1px;
-        right: 0.5px;
+        width: 2px;
+        height: 1px;
       }
     }
     
     input {
-      width: 100%;
-      padding: 0.2rem 0.25rem;
-      border-radius: 0.2rem;
-      font-size: 0.5rem;
-      min-width: 0;
-      
-      &::placeholder {
-        font-size: 0.45rem;
-      }
+      padding: 3px 5px;
+      font-size: 0.6rem;
     }
-  }
-  
-  .records {
-    width: 95%;
-    gap: 0.3rem;
   }
   
   .record-row {
-    border-radius: 0.25rem;
-    padding: 0.2rem 0.3rem;
-    font-size: 0.55rem;
-    
-    .item-left, .item-right {
-      min-width: 0;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-    
-    .exchange-arrow {
-      flex: 0 0 1.5rem;
-      font-size: 0.8rem;
-      -webkit-text-stroke: 0.2px #222;
-    }
+    padding: 5px 8px;
+    font-size: 0.7rem;
+    margin-bottom: 8px;
   }
   
-  .loading-message, .no-records {
-    font-size: 0.6rem;
-    padding: 1rem;
+  .recent-label {
+    font-size: 0.5rem;
+    margin: 0.3rem 0 0.2rem 0.1rem;
   }
 }
 </style>
+

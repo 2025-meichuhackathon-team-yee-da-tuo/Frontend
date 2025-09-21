@@ -6,8 +6,8 @@
 
     <div v-else class="chart-wrap">
         <svg
-            :width="size"
-            :height="size"
+            :width="computedSize"
+            :height="computedSize"
             viewBox="0 0 200 200"
             role="img"
             aria-label="交易圓餅圖"
@@ -43,7 +43,7 @@
             <span class="dot" :style="{ background: seg.color }"></span>
             <span class="name">{{ seg.label }}</span>
             <span class="pct">{{ (seg.percent * 100).toFixed(1) }}%</span>
-            <span class="count">（{{ seg.value }} 筆）</span>
+            <span class="count">（{{ seg.value }} trans）</span>
             </li>
         </ul>
         </div>
@@ -75,6 +75,22 @@ const emit = defineEmits(['loaded'])
 const loading = ref(false)
 const error = ref('')
 const trades = ref([])
+
+// 計算實際大小，支持 CSS 變量覆蓋
+const computedSize = computed(() => {
+  // 檢查是否有 CSS 變量定義的大小
+  if (typeof document !== 'undefined') {
+    const root = document.documentElement
+    const cssVar = getComputedStyle(root).getPropertyValue('--pie-size')
+    if (cssVar) {
+      const parsedSize = parseInt(cssVar.replace('px', ''))
+      if (!isNaN(parsedSize)) {
+        return parsedSize
+      }
+    }
+  }
+  return props.size
+})
 
 /**
  * 取得含該物品的所有交易
@@ -215,10 +231,10 @@ watch(() => props.item, fetchTrades)
 .state.error { color: #c0392b; }
 
 .chart-wrap {
-  display: grid;
-  grid-template-columns: minmax(200px, 280px) 1fr;
-  gap: 1rem;
+  display: flex;
+  flex-direction: column;
   align-items: center;
+  gap: 1rem;
 }
 
 .pie {
@@ -240,8 +256,12 @@ watch(() => props.item, fetchTrades)
   list-style: none;
   padding: 0;
   margin: 0;
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 0.25rem;
+  align-items: center;
+  width: 100%;
+  max-width: 300px;
 }
 .legend li {
   display: grid;
@@ -268,6 +288,13 @@ watch(() => props.item, fetchTrades)
 
 
 @media (max-width: 640px) {
-  .chart-wrap { grid-template-columns: 1fr; }
+  .chart-wrap {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .legend {
+    max-width: 250px;
+  }
 }
 </style>

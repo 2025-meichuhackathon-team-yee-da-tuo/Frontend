@@ -61,8 +61,15 @@ export default {
       }
       
       // 如果沒有記錄的導航歷史，使用默認的返回行為
-      if (currentPage == 'menu')
+      if (currentPage === 'menu') {
         router.back();
+      } else if (currentPage === 'detailed_item') {
+        // 從詳細項目頁面返回到儀表板
+        router.push({ name: 'dashboard' });
+      } else {
+        // 其他頁面的默認行為
+        router.back();
+      }
     }
     
     function goToMenu() {

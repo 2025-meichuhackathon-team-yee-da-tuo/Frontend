@@ -259,7 +259,7 @@ watch(() => props.item, fetchTrades)
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-  align-items: center;
+  align-items: flex-start;
   width: 100%;
   max-width: 300px;
 }
@@ -295,6 +295,7 @@ watch(() => props.item, fetchTrades)
   
   .legend {
     max-width: 250px;
+    align-items: flex-start;
   }
 }
 </style>

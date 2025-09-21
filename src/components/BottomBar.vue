@@ -13,7 +13,7 @@
 
     <div class="btm-bar-header">{{ title }}</div>
 
-    <span class="btm-bar-btn" aria-label="back" @click="goBack">
+    <span class="btm-bar-btn" aria-label="back" @click="goBack" tabindex="-1">
       <img src="@/assets/Icons/back-arrow.svg" alt="back to previous page" />
     </span>
   </div>

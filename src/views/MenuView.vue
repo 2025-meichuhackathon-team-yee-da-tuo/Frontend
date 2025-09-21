@@ -39,6 +39,11 @@ const menuMap = {
   register: [
     { label: "Register", to: { name: "register" } },
     { label: "Login", to: { name: "login" } },
+    { label: "Trade", to: { name: "trade" } },
+    { label: "Dashboard", to: { name: "dashboard" } },
+    { label: "Logout", action: "logout" },
+    { label: "History", to: { name: "user_history" } },
+    { label: "Global History", to: { name: "global_history" } },
   ],
   login: [
     { label: "Login", to: { name: "login" } },

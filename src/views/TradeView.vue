@@ -47,10 +47,10 @@ const isRateInvalid = computed(() => {
 
 function checkAuthStatus() {
   userStore.restoreUser()
-  if (!userStore.isLoggedIn || !userStore.email) {
-    router.replace({ name: 'login' })
-    return false
-  }
+  // if (!userStore.isLoggedIn || !userStore.email) {
+  //   router.replace({ name: 'login' })
+  //   return false
+  // }
   return true
 }
 
@@ -485,7 +485,7 @@ watch(() => route.query, syncFromQuery, { immediate: true, deep: true })
 }
 
 .submit-btn {
-  padding: 0.75rem 3rem;
+  padding: 0.55rem 3rem;
   background: #19181a;
   color: #fff;
   border: 2px solid transparent;
@@ -573,7 +573,7 @@ watch(() => route.query, syncFromQuery, { immediate: true, deep: true })
   
   .submit-btn {
     font-size: 0.9rem;
-    padding: 0.6rem 2rem;
+    padding: 0.4rem 2rem;
   }
   
   .error-message {

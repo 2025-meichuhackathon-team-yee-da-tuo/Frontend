@@ -1,6 +1,5 @@
 <template>
   <div class="auth-bg">
-    <GuideButton ref="guideBtn"/>
     <div class="auth-content">
       <div class="auth-box">
         <form class="auth-form" @submit.prevent="onRegister">
@@ -177,7 +176,7 @@ async function onRegister() {
   justify-content: center;
   align-items: center;
   padding: 1rem;
-  margin-top: 1rem;
+  /* margin-top: 1rem; */
 }
 
 .auth-box {

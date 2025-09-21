@@ -1,6 +1,5 @@
 <template>
   <div class="login-bg">
-    <GuideButton ref="guideBtn" />
     <div class="login-content">
       <div class="login-form">
         <div class="form-group">
